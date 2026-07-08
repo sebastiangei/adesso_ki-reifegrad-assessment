@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KI-Reifegrad-Assessment | adesso</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    /* adesso Markenfarben (vom Kunden bereitgestellt) */
+    --brand-blue:#006EC7;
+    --brand-teal:#28DCAA;
+    --brand-purple:#461EBE;
+    --warm-gray:#E7E5E3;
+
+    /* abgeleitete Funktionsfarben */
+    --brand-primary:#006EC7;
+    --brand-primary-dark:#00568F;
+    --teal-dark:#146B52;
+    --purple-dark:#341769;
+    --ink:#262422;
+    --ink-soft:#55524C;
+    --ink-faint:#8A857D;
+    --paper:#FFFFFF;
+    --bg:#F8F7F6;
+    --bg-alt:#E7E5E3;
+    --border:#D9D6D2;
+    --stage1:#86807A;
+    --stage2:#2B7FC4;
+    --stage3:#28DCAA;
+    --stage4:#3490B2;
+    --stage5:#461EBE;
+    --shadow: 0 2px 14px rgba(0,0,0,.07);
+    --shadow-soft: 0 1px 4px rgba(0,0,0,.06);
+    --radius: 10px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .app-shell{max-width:1180px;margin:0 auto;padding:0 20px 60px;}
+
+  /* ---------- Header ---------- */
+  header.topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 0 18px;border-bottom:3px solid var(--brand-primary);
+    flex-wrap:wrap;gap:14px;
+  }
+  .brand{display:flex;align-items:baseline;gap:14px;}
+  .brand .wordmark{
+    font-weight:800;font-size:28px;letter-spacing:-0.5px;color:var(--brand-primary);
+  }
+  .brand .title{font-size:16px;color:var(--ink-soft);font-weight:600;border-left:1px solid var(--border);padding-left:14px;}
+  .mode-toggle{display:flex;background:var(--bg-alt);border-radius:999px;padding:4px;gap:2px;}
+  .mode-toggle button{
+    border:none;background:transparent;padding:9px 18px;border-radius:999px;
+    font-size:13.5px;font-weight:600;cursor:pointer;color:var(--ink-soft);
+    transition:.15s;
+  }
+  .mode-toggle button.active{background:var(--brand-primary);color:#fff;box-shadow:var(--shadow-soft);}
+
+  /* ---------- Stepper ---------- */
+  .stepper{display:flex;gap:8px;margin:26px 0 24px;}
+  .stepper .step{
+    flex:1;display:flex;align-items:center;gap:10px;padding:13px 16px;
+    background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);
+    cursor:pointer;transition:.15s;
+  }
+  .stepper .step:hover{border-color:var(--brand-primary);}
+  .stepper .step.active{border-color:var(--brand-primary);background:#EEF6FC;box-shadow:var(--shadow-soft);}
+  .stepper .step .num{
+    width:26px;height:26px;border-radius:50%;background:var(--bg-alt);color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;
+  }
+  .stepper .step.active .num{background:var(--brand-primary);color:#fff;}
+  .stepper .step .lbl{font-size:14px;font-weight:600;color:var(--ink-soft);}
+  .stepper .step.active .lbl{color:var(--ink);}
+  .stepper .step.done .num{background:var(--stage5);color:#fff;}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fadeIn .25s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-soft);}
+
+  /* ---------- Step 1: Angaben ---------- */
+  .meta-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;padding:26px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field.full{grid-column:1/-1;}
+  .field label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .field input[type=text], .field input[type=date], .field input[type=password], .field select, .field textarea{
+    border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:14px;font-family:inherit;
+    background:#fcfcfc;
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--brand-primary);outline-offset:1px;background:#fff;}
+  .hint{font-size:12.5px;color:var(--ink-faint);}
+
+  /* ---------- Agent-Funktionen ---------- */
+  .agent-card{padding:22px 26px;margin-top:16px;}
+  .agent-card-header h3{margin:0 0 6px;font-size:15.5px;}
+  .agent-card-header p{margin:0 0 16px;font-size:13px;color:var(--ink-soft);max-width:760px;}
+  .agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;}
+  .agent-test-row{display:flex;align-items:center;gap:14px;margin-bottom:12px;}
+  .agent-status{font-size:12.5px;font-weight:700;}
+  .agent-status.pending{color:var(--ink-faint);}
+  .agent-status.ok{color:var(--teal-dark);}
+  .agent-status.error{color:var(--purple-dark);}
+  .agent-warning{font-size:11.5px;color:var(--ink-faint);margin:0;line-height:1.5;}
+  .agent-badge-header{
+    font-size:12px;font-weight:800;color:#fff;background:var(--brand-purple);padding:6px 12px;border-radius:999px;
+  }
+  .btn-agent{
+    border:1px solid var(--brand-purple);background:#fff;color:var(--brand-purple);font-size:12px;font-weight:700;
+    padding:7px 13px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .btn-agent:hover{background:#F3EFFB;}
+  .btn-agent:disabled{opacity:.5;cursor:not-allowed;}
+  .agent-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0;}
+  .agent-evidence{margin-left:24px;font-size:11px;color:var(--purple-dark);font-style:italic;margin-top:2px;}
+  .agent-copilot-box{
+    margin-top:12px;padding:12px 14px;background:#F3EFFB;border:1px solid #DCD1F5;border-radius:8px;font-size:13px;color:var(--ink);
+  }
+  .agent-copilot-box b{color:var(--brand-purple);}
+  .agent-summary-box{
+    margin:0 0 20px;padding:20px 22px;background:#F3EFFB;border:1px solid #DCD1F5;border-radius:10px;
+  }
+  .agent-summary-box .agent-tag{font-size:11px;font-weight:800;color:#fff;background:var(--brand-purple);padding:3px 9px;border-radius:999px;margin-bottom:10px;display:inline-block;}
+  .agent-summary-box p{margin:0;font-size:14px;line-height:1.6;color:var(--ink);}
+
+  /* ---------- Step 2: Erhebung ---------- */
+  .progress-wrap{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .progress-bar{flex:1;height:9px;background:var(--bg-alt);border-radius:999px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--brand-primary),var(--brand-primary-dark));width:0%;transition:width .2s;}
+  .progress-text{font-size:13px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
+
+  .dim-card{margin-bottom:14px;overflow:hidden;}
+  .dim-header{
+    display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;
+    user-select:none;
+  }
+  .dim-header-left{display:flex;align-items:center;gap:12px;}
+  .dim-icon{
+    width:34px;height:34px;border-radius:8px;background:var(--bg-alt);color:var(--brand-primary);
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;
+  }
+  .dim-name{font-size:15.5px;font-weight:700;}
+  .dim-desc{font-size:12.5px;color:var(--ink-faint);margin-top:2px;}
+  .dim-header-right{display:flex;align-items:center;gap:12px;}
+  .dim-score-badge{
+    font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--bg-alt);color:var(--ink-soft);
+  }
+  .chevron{transition:transform .2s;color:var(--ink-faint);font-size:13px;}
+  .dim-card.open .chevron{transform:rotate(180deg);}
+  .dim-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
+  .dim-card.open .dim-body{max-height:2400px;}
+  .dim-body-inner{padding:4px 20px 22px;border-top:1px solid var(--border);}
+
+  .question{padding:16px 0;border-bottom:1px dashed var(--border);}
+  .question:last-of-type{border-bottom:none;}
+  .question-text{font-size:14px;font-weight:600;margin-bottom:10px;}
+  .slider-row{display:flex;align-items:center;gap:12px;}
+  .slider-row input[type=range]{
+    flex:1;accent-color:var(--brand-primary);height:6px;
+  }
+  .anchor{font-size:11.5px;color:var(--ink-faint);width:180px;line-height:1.35;}
+  .anchor.low{text-align:right;}
+  .anchor.high{text-align:left;}
+  .val-pill{
+    min-width:34px;text-align:center;font-weight:800;font-size:13px;color:#fff;background:var(--brand-primary);
+    border-radius:6px;padding:4px 0;
+  }
+
+  .anchor-hint{display:flex;justify-content:space-between;gap:14px;font-size:11px;color:var(--ink-faint);font-style:italic;margin:0 0 10px;}
+  .criteria-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
+  .criterion{font-size:13px;color:var(--ink-soft);cursor:pointer;line-height:1.4;}
+  .criterion-row{display:flex;align-items:flex-start;gap:9px;}
+  .criterion input[type=checkbox]{margin-top:3px;accent-color:var(--brand-primary);width:15px;height:15px;flex-shrink:0;cursor:pointer;}
+  .criterion.agent-suggested .criterion-row span{color:var(--brand-purple);font-weight:600;}
+  .score-row{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
+  .score-row b{color:var(--brand-primary);font-size:14.5px;}
+  .score-hint{color:var(--ink-faint);font-weight:400;}
+  .override-row{display:flex;align-items:center;gap:12px;}
+  .override-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
+  .override-row input[type=range]{flex:1;accent-color:var(--brand-primary);height:6px;}
+  .btn-sync{
+    border:1px solid var(--border);background:#fff;color:var(--brand-primary);font-size:11px;font-weight:700;
+    padding:5px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .btn-sync:hover{background:var(--bg-alt);}
+
+  .freitext-block{margin-top:8px;padding-top:14px;border-top:1px solid var(--border);}
+  .freitext-block label{font-size:13px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px;}
+  .freitext-block textarea{width:100%;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:13.5px;font-family:inherit;min-height:64px;background:#fcfcfc;}
+
+  .global-notes{padding:20px;margin-top:8px;}
+
+  .nav-actions{display:flex;justify-content:space-between;margin-top:22px;}
+  .btn{
+    border:none;border-radius:7px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;
+    transition:.15s;
+  }
+  .btn-primary{background:var(--brand-primary);color:#fff;}
+  .btn-primary:hover{background:var(--brand-primary-dark);}
+  .btn-secondary{background:var(--bg-alt);color:var(--ink);}
+  .btn-secondary:hover{background:#ddd;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--border);}
+  .btn-ghost:hover{border-color:var(--brand-primary);color:var(--brand-primary);}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* ---------- Step 3: Auswertung ---------- */
+  .report-toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px;}
+  .report-meta{font-size:13px;color:var(--ink-faint);}
+  .report-meta b{color:var(--ink-soft);}
+
+  .overall-banner{
+    display:flex;align-items:center;gap:26px;padding:26px 30px;margin-bottom:20px;
+    background:linear-gradient(135deg,#fff,#EAF3FB);
+  }
+  .stage-badge-lg{
+    width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;color:#fff;font-weight:800;flex-shrink:0;box-shadow:var(--shadow-soft);
+  }
+  .stage-badge-lg .num{font-size:30px;line-height:1;}
+  .stage-badge-lg .of{font-size:10px;opacity:.85;}
+  .overall-text h2{margin:0 0 4px;font-size:20px;}
+  .overall-text p{margin:0;color:var(--ink-soft);font-size:14px;max-width:640px;}
+  .overall-score-num{font-size:13px;color:var(--ink-faint);margin-top:6px;}
+
+  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:20px;margin-bottom:20px;align-items:start;}
+  .chart-card{padding:20px;}
+  .chart-card h3{margin:0 0 12px;font-size:15px;}
+
+  .top3-card{padding:20px;}
+  .top3-card h3{margin:0 0 12px;font-size:15px;}
+  .top3-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+  .top3-item:last-child{border-bottom:none;}
+  .top3-rank{
+    width:26px;height:26px;border-radius:50%;background:var(--brand-primary);color:#fff;font-weight:800;
+    display:flex;align-items:center;justify-content:center;font-size:12.5px;flex-shrink:0;
+  }
+  .top3-body b{font-size:13.5px;}
+  .top3-body p{margin:4px 0 0;font-size:13px;color:var(--ink-soft);}
+  .top3-tag{font-size:11px;color:var(--ink-faint);}
+
+  .dim-results-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;}
+  .dim-result-card{padding:18px 20px;}
+  .dim-result-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .dim-result-top h4{margin:0;font-size:14.5px;}
+  .stage-chip{
+    font-size:11px;font-weight:800;color:#fff;padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .bar-track{height:8px;background:var(--bg-alt);border-radius:999px;margin:10px 0 8px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:999px;}
+  .dim-result-score{font-size:12px;color:var(--ink-faint);}
+  .dim-notes{margin-top:10px;font-size:12.5px;color:var(--ink-soft);background:var(--bg-alt);padding:8px 10px;border-radius:6px;}
+  .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+  .tag{font-size:10.5px;padding:3px 8px;border-radius:999px;font-weight:700;}
+  .tag.pos{background:#E1F9F1;color:var(--teal-dark);}
+  .tag.risk{background:#EFE9FB;color:var(--purple-dark);}
+  .qbreak{margin-top:10px;font-size:12px;color:var(--ink-faint);}
+
+  .accordion-lib{padding:18px 20px;margin-bottom:20px;}
+  .accordion-lib summary{cursor:pointer;font-weight:700;font-size:14px;padding:6px 0;}
+  .lib-dim{margin:14px 0;}
+  .lib-dim h5{margin:0 0 8px;font-size:13.5px;color:var(--brand-primary);}
+  .lib-stage-row{display:flex;gap:10px;padding:8px 0;border-top:1px dashed var(--border);}
+  .lib-stage-name{width:150px;flex-shrink:0;font-size:12px;font-weight:700;color:var(--ink-soft);}
+  .lib-stage-recs{font-size:12.5px;color:var(--ink-soft);}
+  .lib-stage-recs div{margin-bottom:3px;}
+
+  /* Kunde view specifics */
+  .kunde-hero{
+    text-align:center;padding:40px 30px 34px;margin-bottom:22px;
+    background:linear-gradient(135deg,#fff,#EAF3FB);
+  }
+  .kunde-hero .wordmark-sm{color:var(--brand-primary);font-weight:800;font-size:14px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
+  .kunde-hero h2{font-size:24px;margin:6px 0 4px;}
+  .kunde-hero .sub{color:var(--ink-faint);font-size:13.5px;margin-bottom:22px;}
+  .kunde-hero .stage-badge-lg{margin:0 auto 14px;width:104px;height:104px;}
+  .kunde-hero .stage-badge-lg .num{font-size:36px;}
+  .kunde-hero .stage-name{font-size:19px;font-weight:800;margin-bottom:6px;}
+  .kunde-hero .stage-desc{max-width:620px;margin:0 auto;color:var(--ink-soft);font-size:14.5px;}
+
+  .kunde-section{padding:24px 26px;margin-bottom:20px;}
+  .kunde-section h3{margin:0 0 16px;font-size:16px;display:flex;align-items:center;gap:8px;}
+  .kunde-strength-grid, .kunde-potential-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+  .kunde-mini-card{background:var(--bg-alt);border-radius:8px;padding:16px 18px;}
+  .kunde-mini-card h5{margin:0 0 6px;font-size:14px;}
+  .kunde-mini-card p{margin:0;font-size:13px;color:var(--ink-soft);}
+  .kunde-steps{counter-reset:step;}
+  .kunde-step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--border);}
+  .kunde-step:last-child{border-bottom:none;}
+  .kunde-step-num{
+    counter-increment:step;width:30px;height:30px;border-radius:50%;background:var(--brand-primary);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;flex-shrink:0;
+  }
+  .kunde-step-num::before{content:counter(step);}
+  .kunde-step p{margin:0;font-size:13.5px;color:var(--ink-soft);}
+  .kunde-step b{font-size:14px;}
+  .kunde-footer{text-align:center;font-size:12px;color:var(--ink-faint);padding:18px 0 4px;}
+
+  .consultant-only{}
+  body.mode-kunde .consultant-only{display:none !important;}
+  body.mode-kunde .consultant-view{display:none !important;}
+  body.mode-consultant .kunde-view{display:none !important;}
+
+  footer.appfoot{text-align:center;color:var(--ink-faint);font-size:12px;padding:30px 0 10px;}
+
+  @media (max-width:820px){
+    .meta-grid, .grid-2, .dim-results-grid, .kunde-strength-grid, .kunde-potential-grid{grid-template-columns:1fr;}
+    .anchor{width:110px;font-size:10.5px;}
+    .stepper .lbl{display:none;}
+  }
+
+  @media print{
+    header.topbar .mode-toggle, .stepper, .nav-actions, .report-toolbar .btn-row, #btnStartOver, .no-print{display:none !important;}
+    body{background:#fff;}
+    .panel{display:block !important;}
+    #panel-angaben, #panel-erhebung{display:none !important;}
+    .card{box-shadow:none;border:1px solid #ccc;}
+  }
+</style>
+</head>
+<body class="mode-consultant">
+<div class="app-shell">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="wordmark">adesso</span>
+      <span class="title">KI-Reifegrad-Assessment für Change-Projekte</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span id="agentBadge" class="agent-badge-header" style="display:none;">🤖 Agent aktiv</span>
+      <div class="mode-toggle no-print" id="modeToggle">
+        <button data-mode="consultant" class="active">Consultant-Ansicht</button>
+        <button data-mode="kunde">Kunden-Ansicht</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="stepper no-print" id="stepper">
+    <div class="step active" data-step="angaben"><div class="num">1</div><div class="lbl">Angaben</div></div>
+    <div class="step" data-step="erhebung"><div class="num">2</div><div class="lbl">Erhebung</div></div>
+    <div class="step" data-step="auswertung"><div class="num">3</div><div class="lbl">Auswertung &amp; Report</div></div>
+  </nav>
+
+  <!-- ================= STEP 1: ANGABEN ================= -->
+  <section class="panel active" id="panel-angaben">
+    <div class="card">
+      <div class="meta-grid">
+        <div class="field">
+          <label>Kunde / Unternehmen</label>
+          <input type="text" id="metaKunde" placeholder="z. B. Mustermann GmbH">
+        </div>
+        <div class="field">
+          <label>Fachbereich / Team</label>
+          <input type="text" id="metaBereich" placeholder="z. B. Vertrieb, IT, Produktion">
+        </div>
+        <div class="field">
+          <label>Consultant</label>
+          <input type="text" id="metaConsultant" placeholder="Ihr Name">
+        </div>
+        <div class="field">
+          <label>Datum der Erhebung</label>
+          <input type="date" id="metaDatum">
+        </div>
+        <div class="field full">
+          <label>Projektkontext (optional, intern)</label>
+          <textarea id="metaKontext" placeholder="Kurzer Kontext: Anlass des Assessments, Rahmenbedingungen, beteiligte Personen ..."></textarea>
+          <span class="hint">Dieses Feld erscheint nur in der Consultant-Ansicht.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card agent-card no-print">
+      <div class="agent-card-header">
+        <h3>🤖 Agent-Funktionen (optional)</h3>
+        <p>Verbindet das Tool live mit einem LLM, um Freitext-Notizen automatisch auszuwerten, Report-Texte zu formulieren und Interviewfragen vorzuschlagen. Ohne Verbindung funktioniert das Tool vollständig offline und regelbasiert weiter.</p>
+      </div>
+
+      <div class="field" style="margin-bottom:14px;max-width:360px;">
+        <label>Anbieter</label>
+        <select id="agentProvider">
+          <option value="anthropic" selected>Anthropic (Claude API, direkt)</option>
+          <option value="custom">Eigener/interner Endpunkt (z. B. adesso GPT)</option>
+        </select>
+      </div>
+
+      <div id="providerFieldsAnthropic">
+        <div class="agent-grid">
+          <div class="field">
+            <label>Anthropic API-Key</label>
+            <input type="password" id="agentApiKey" placeholder="sk-ant-...">
+          </div>
+          <div class="field">
+            <label>Modell</label>
+            <select id="agentModel">
+              <option value="claude-sonnet-5" selected>claude-sonnet-5 (empfohlen)</option>
+              <option value="claude-haiku-4-5-20251001">claude-haiku-4-5 (schneller/günstiger)</option>
+              <option value="claude-opus-4-8">claude-opus-4-8 (höchste Qualität)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="providerFieldsCustom" style="display:none;">
+        <div class="agent-grid">
+          <div class="field full">
+            <label>Endpunkt-URL</label>
+            <input type="text" id="customEndpoint" placeholder="https://.../chat/completions">
+          </div>
+          <div class="field">
+            <label>Modell / Deployment-Name</label>
+            <input type="text" id="customModel" placeholder="z. B. gpt-4o oder Deployment-Name">
+          </div>
+          <div class="field">
+            <label>Authentifizierung</label>
+            <select id="customAuthType">
+              <option value="bearer" selected>Bearer-Token (Authorization: Bearer ...)</option>
+              <option value="apikey">api-key Header (Azure-Stil)</option>
+              <option value="none">Keine (bereits im internen Netz/SSO authentifiziert)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Token / Key (falls erforderlich)</label>
+            <input type="password" id="customAuthValue" placeholder="Token oder Key">
+          </div>
+        </div>
+        <p class="agent-warning">Erwartet ein OpenAI-kompatibles Chat-Completions-Format (messages-Array, Antwort in choices[0].message.content). Bitte mit eurem AI-Platform-Team abklären, ob der Endpunkt CORS-Anfragen direkt aus dem Browser erlaubt – sonst blockt der Browser den Aufruf unabhängig vom Tool.</p>
+      </div>
+
+      <div class="agent-test-row">
+        <button class="btn btn-secondary" id="btnTestAgent" onclick="testAgentConnection()">Verbindung testen</button>
+        <span id="agentTestStatus" class="agent-status"></span>
+      </div>
+      <p class="agent-warning">Keys/Tokens werden ausschließlich im Arbeitsspeicher dieser Browser-Sitzung gehalten, nicht gespeichert und nur direkt an die jeweilige API übertragen. Nicht auf fremden Rechnern verwenden und beim Screensharing im Workshop nicht die Entwicklertools öffnen. Zugang mit Ausgabenlimit/eingeschränkten Rechten empfohlen.</p>
+    </div>
+
+    <div class="nav-actions">
+      <span></span>
+      <button class="btn btn-primary" onclick="goToStep('erhebung')">Weiter zur Erhebung →</button>
+    </div>
+  </section>
+
+  <!-- ================= STEP 2: ERHEBUNG ================= -->
+  <section class="panel" id="panel-erhebung">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-text" id="progressText">0 / 24 Fragen beantwortet</div>
+    </div>
+    <div id="dimContainer"></div>
+    <div class="card global-notes">
+      <div class="field">
+        <label>Globale Beobachtungen (optional)</label>
+        <textarea id="globalNotes" placeholder="Übergreifende Eindrücke aus Interviews/Workshops, die sich nicht klar einer Dimension zuordnen lassen ..."></textarea>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-ghost" onclick="goToStep('angaben')">← Zurück</button>
+      <button class="btn btn-primary" onclick="goToStep('auswertung')">Auswertung anzeigen →</button>
+    </div>
+  </section>
+
+  <!-- ================= STEP 3: AUSWERTUNG ================= -->
+  <section class="panel" id="panel-auswertung">
+    <div class="report-toolbar">
+      <div class="report-meta" id="reportMetaLine"></div>
+      <div class="btn-row no-print">
+        <button class="btn btn-ghost" onclick="goToStep('erhebung')">← Zurück zur Erhebung</button>
+        <button class="btn btn-secondary" onclick="copySummary()">📋 Text kopieren</button>
+        <button class="btn btn-secondary" onclick="window.print()">🖨️ Drucken / PDF</button>
+      </div>
+    </div>
+    <div id="reportRoot"></div>
+  </section>
+
+  <footer class="appfoot no-print">adesso KI-Reifegrad-Assessment · vollständig lokal im Browser, keine Datenübertragung</footer>
+</div>
+
+<script>
+/* =========================================================================
+   DATENMODELL: Reifestufen, Dimensionen, Fragen, Handlungsempfehlungen
+   ========================================================================= */
+
+const STAGES = [
+  {level:1, name:"Unbewusst / Ad-hoc", hex:"#86807A", textColor:"#fff",
+   desc:"KI wird – wenn überhaupt – vereinzelt und ungesteuert von Einzelpersonen genutzt. Es gibt keine Strategie, keine Richtlinien und kaum Bewusstsein für Chancen und Risiken."},
+  {level:2, name:"Explorativ", hex:"#2B7FC4", textColor:"#fff",
+   desc:"Erste Pilotprojekte und Experimente laufen, meist isoliert in einzelnen Teams. Das Interesse ist geweckt, es fehlt jedoch an Struktur, Standards und Skalierung."},
+  {level:3, name:"Etabliert", hex:"#28DCAA", textColor:"#1A3B32",
+   desc:"KI ist in definierten Prozessen und Teams fest verankert. Es gibt klare Verantwortlichkeiten, dokumentierte Standards und erste messbare Erfolge."},
+  {level:4, name:"Skaliert", hex:"#3490B2", textColor:"#fff",
+   desc:"KI-Anwendungen werden bereichsübergreifend ausgerollt und systematisch gesteuert. Governance, Kompetenzaufbau und Kommunikation sind professionalisiert."},
+  {level:5, name:"Transformativ", hex:"#461EBE", textColor:"#fff",
+   desc:"KI ist integraler Bestandteil von Strategie und Kultur. Die Organisation lernt kontinuierlich weiter und entwickelt eigene Innovationen und Geschäftsmodelle."}
+];
+
+const POSITIVE_KEYWORDS = ["pilot","erfolg","training","schulung","multiplikator","champion","budget","roadmap",
+  "offen für","hackathon","engagiert","neugierig","unterstützt","sponsor","motiviert","positiv","interesse","vorbild"];
+const RISK_KEYWORDS = ["angst","sorge","unsicher","widerstand","skeptisch","skepsis","keine zeit","kein budget",
+  "datenschutz","bedenken","ablehnung","misstrauen","überforder","frustriert","kündigung","jobangst","arbeitsplatz","silodenken","excel-lösung"];
+
+const DIMENSIONS = [
+  {
+    id:"strategie", short:"STR", name:"Strategie & Zielbild",
+    desc:"KI-Strategie, Priorisierung von Use Cases, Steuerung",
+    questions:[
+      {id:"strategie_1", text:"Es gibt eine dokumentierte KI-Strategie mit klaren Zielen.",
+       low:"Keine schriftliche Strategie, KI wird zufällig genutzt.", high:"Dokumentierte Strategie mit Zielbild, Budget und Owner.",
+       criteria:["Es existiert mindestens ein schriftliches Dokument (Strategiepapier, Präsentation, Blueprint) zum Thema KI.",
+                 "Das Dokument enthält konkrete, messbare Ziele (nicht nur Absichtserklärungen).",
+                 "Ein Budget ist der KI-Strategie explizit zugeordnet.",
+                 "Die Strategie wurde von der Geschäftsleitung formell verabschiedet/freigegeben."]},
+      {id:"strategie_2", text:"Use Cases sind priorisiert und mit Business Case hinterlegt.",
+       low:"Keine Use-Case-Liste vorhanden.", high:"Use-Case-Portfolio mit ROI-Bewertung und Roadmap.",
+       criteria:["Es existiert eine Liste gesammelter KI-Use-Cases (auch wenn unstrukturiert).",
+                 "Für mindestens einen Use Case liegt eine Aufwand/Nutzen-Einschätzung vor.",
+                 "Es gibt eine erkennbare Priorisierung (z. B. Top 3) unter den Use Cases.",
+                 "Für priorisierte Use Cases existiert ein Business Case mit ROI- oder Nutzenkennzahl."]},
+      {id:"strategie_3", text:"Verantwortlichkeiten für KI-Initiativen sind klar benannt.",
+       low:"Niemand fühlt sich erkennbar zuständig.", high:"Dediziertes Gremium/CoE mit Entscheidungsbefugnis.",
+       criteria:["Mindestens eine Person ist informell als Ansprechpartner für KI-Themen bekannt.",
+                 "Diese Zuständigkeit ist offiziell kommuniziert (z. B. im Organigramm, Intranet).",
+                 "Es gibt ein Gremium/Team – nicht nur eine Einzelperson –, das KI-Themen steuert.",
+                 "Das Gremium verfügt über formale Entscheidungsbefugnis (z. B. Budgetfreigabe)."]},
+      {id:"strategie_4", text:"Der Erfolg von KI-Initiativen wird anhand von KPIs gemessen.",
+       low:"Keine Erfolgsmessung vorhanden.", high:"Etabliertes KPI-Dashboard, regelmäßiges Reporting.",
+       criteria:["Es gibt mindestens eine informell verfolgte Kennzahl zu einem KI-Piloten.",
+                 "KPIs sind für mehrere Use Cases definiert (z. B. Zeitersparnis, Fehlerquote).",
+                 "Es existiert ein regelmäßiges Reporting (z. B. monatlich/quartalsweise) zu diesen KPIs.",
+                 "Die KPI-Ergebnisse fließen nachweislich in Entscheidungen ein (z. B. Skalierung/Stopp von Use Cases)."]}
+    ],
+    recommendations:{
+      1:["Einen 90-minütigen Strategie-Workshop mit der Geschäftsleitung ansetzen, um 3–5 Use Cases zu sammeln und grob zu bewerten (Aufwand/Nutzen-Matrix).",
+         "Eine verantwortliche Person als zentralen Ansprechpartner für das Thema KI benennen."],
+      2:["Gesammelte Use Cases mit einem einfachen Business-Case-Template (Nutzen, Aufwand, Risiko) bewerten und die Top 3 priorisieren.",
+         "Ein einseitiges Zielbild-Dokument erstellen und mit dem Führungskreis abstimmen."],
+      3:["Ein KI-Steuerungsgremium mit fester Kadenz (z. B. monatlich) einrichten, das Priorisierung und Budget verantwortet.",
+         "KPIs je Use Case definieren (z. B. Zeitersparnis, Qualität) und ein einfaches Reporting aufsetzen."],
+      4:["Die KI-Strategie mit der Unternehmensstrategie verzahnen und jährlich im Strategieprozess reviewen.",
+         "Ein Portfolio-Management etablieren, das die Skalierung erfolgreicher Piloten systematisch steuert."],
+      5:["Das Zielbild kontinuierlich mit Markt- und Wettbewerbsbeobachtung weiterentwickeln (z. B. halbjährlicher Strategie-Sprint).",
+         "Eigene KI-Wertschöpfung (neue Produkte/Geschäftsmodelle) aktiv vorantreiben."]
+    }
+  },
+  {
+    id:"prozesse", short:"PRO", name:"Prozesse & Tools",
+    desc:"Integration von KI-Tools in bestehende Workflows",
+    questions:[
+      {id:"prozesse_1", text:"KI-Tools sind in bestehende Kernprozesse integriert.",
+       low:"KI wird isoliert, außerhalb der Kernprozesse genutzt.", high:"KI ist nahtlos in Kernprozesse/Systeme eingebettet.",
+       criteria:["Mindestens ein KI-Tool wird regelmäßig in einem Kernprozess genutzt (nicht nur experimentell).",
+                 "Die Nutzung ist im Prozess dokumentiert (z. B. in einer Arbeitsanweisung).",
+                 "Das Tool ist technisch an relevante Systeme angebunden (z. B. Schnittstelle, Single-Sign-On).",
+                 "Mehrere Kernprozesse – nicht nur einer – nutzen KI-Tools produktiv."]},
+      {id:"prozesse_2", text:"Es existieren dokumentierte Standards für den Tool-Einsatz.",
+       low:"Keine Regeln, jeder nutzt Tools wie er will.", high:"Verbindliche, aktuell gehaltene Nutzungsrichtlinien.",
+       criteria:["Es gibt mündliche/informelle Absprachen zur Tool-Nutzung.",
+                 "Eine schriftliche Richtlinie (mind. 1 Seite) existiert.",
+                 "Die Richtlinie wird aktiv kommuniziert (z. B. Onboarding, Intranet).",
+                 "Die Richtlinie wird regelmäßig aktualisiert und ihre Einhaltung stichprobenartig geprüft."]},
+      {id:"prozesse_3", text:"Datenqualität/-verfügbarkeit ermöglicht produktiven KI-Einsatz.",
+       low:"Daten sind verteilt, inkonsistent, schwer zugänglich.", high:"Saubere, zentral verfügbare Datenbasis mit klaren Zugriffsregeln.",
+       criteria:["Die für KI relevanten Daten sind grundsätzlich digital verfügbar (nicht nur auf Papier).",
+                 "Die Daten liegen an einem zentralen, auffindbaren Ort (nicht verteilt in Einzel-Excel-Dateien).",
+                 "Es existieren definierte Zugriffsregeln/-rechte auf diese Daten.",
+                 "Die Datenqualität wird aktiv überwacht (z. B. Prüfroutinen, Verantwortliche für Datenpflege)."]},
+      {id:"prozesse_4", text:"Es gibt einen etablierten Freigabeprozess für neue Tools.",
+       low:"Wildwuchs, keine Freigabeprozesse.", high:"Etablierter Auswahl- und Freigabeprozess.",
+       criteria:["Es gibt eine Anlaufstelle (Person/Team), die neue Tool-Wünsche entgegennimmt.",
+                 "Ein definierter Prüfschritt (z. B. Datenschutz-Check) ist Teil dieses Prozesses.",
+                 "Der Freigabeprozess ist dokumentiert und den Mitarbeitenden bekannt.",
+                 "Der Prozess wird nachweislich eingehalten (kein Tool wird am Prozess vorbei eingeführt)."]}
+    ],
+    recommendations:{
+      1:["Einen Katalog erstellen, welche KI-Tools aktuell (auch inoffiziell) im Einsatz sind, um „Schatten-KI“ sichtbar zu machen.",
+         "Eine einseitige Nutzungsrichtlinie (erlaubt/nicht erlaubt) verabschieden und kommunizieren."],
+      2:["2–3 Pilotprozesse auswählen und dort testweise ein KI-Tool in den bestehenden Workflow integrieren.",
+         "Einen einfachen Freigabeprozess definieren (wer prüft Datenschutz/Sicherheit neuer Tools)."],
+      3:["Für produktiv genutzte Tools verbindliche Standard-Workflows dokumentieren und schulen.",
+         "Datenquellen für die wichtigsten Use Cases konsolidieren und Zugriffsrechte klar regeln."],
+      4:["KI-Funktionalitäten in Kernsysteme (CRM, ERP, Ticketsystem) integrieren statt Insellösungen zu betreiben.",
+         "Eine Tool-Governance mit quartalsweisem Review von Nutzung, Kosten und Risiken etablieren."],
+      5:["Prozesse End-to-End neu denken (Process Redesign), statt KI nur in bestehende Abläufe einzufügen.",
+         "Eine unternehmensweite Datenplattform aufbauen, die KI-Anwendungen automatisiert versorgt."]
+    }
+  },
+  {
+    id:"skills", short:"SKI", name:"Skills & Kompetenzen",
+    desc:"KI-Kompetenzniveau der Mitarbeitenden",
+    questions:[
+      {id:"skills_1", text:"Mitarbeitende verfügen über grundlegende KI-/Prompting-Kompetenz.",
+       low:"Kaum Grundverständnis vorhanden.", high:"Breite Belegschaft sicher im Umgang mit KI-Tools.",
+       criteria:["Mindestens einzelne Mitarbeitende nutzen KI-Tools bereits eigenständig.",
+                 "Ein Grundverständnis von Chancen/Risiken ist bei einem größeren Kreis vorhanden (nicht nur Einzelpersonen).",
+                 "Mitarbeitende können konkrete Beispiele ihrer eigenen KI-Nutzung nennen.",
+                 "Die Mehrheit der befragten Mitarbeitenden nutzt KI-Tools sicher im Arbeitsalltag."]},
+      {id:"skills_2", text:"Es gibt strukturierte Trainings-/Qualifizierungsangebote.",
+       low:"Keine Schulungen vorhanden.", high:"Curriculum mit rollenspezifischen Trainingspfaden.",
+       criteria:["Es wurden Lernressourcen (Links, Videos) informell geteilt.",
+                 "Mindestens eine Schulung/ein Workshop hat bereits stattgefunden.",
+                 "Es gibt ein wiederkehrendes Schulungsformat (z. B. quartalsweise).",
+                 "Es existiert ein strukturiertes Curriculum mit unterschiedlichen Levels/Rollen."]},
+      {id:"skills_3", text:"Es existieren interne Experten/Power-User als Ansprechpartner.",
+       low:"Keine erkennbaren Experten vorhanden.", high:"Etabliertes Netzwerk von Power-Usern.",
+       criteria:["Mindestens eine Person gilt informell als „Ansprechpartner für KI-Fragen“.",
+                 "Diese Person(en) sind den Kolleg:innen namentlich bekannt.",
+                 "Es gibt mehrere Power-User, verteilt über verschiedene Teams/Bereiche.",
+                 "Die Power-User tauschen sich in einem festen Format (z. B. Community) aus."]},
+      {id:"skills_4", text:"Kompetenzaufbau ist Teil der Personalentwicklung (Ziele, Budget).",
+       low:"Kein Bezug zur Personalentwicklung.", high:"Fester Bestandteil von Zielvereinbarungen und Weiterbildungsbudget.",
+       criteria:["KI-Kompetenz wird in mindestens einem Mitarbeitendengespräch erwähnt.",
+                 "Ein Weiterbildungsbudget für KI-Themen ist explizit vorhanden.",
+                 "KI-Kompetenzziele sind Teil formaler Zielvereinbarungen einzelner Rollen.",
+                 "Kompetenzaufbau ist im HR-Entwicklungsprogramm strukturell verankert."]}
+    ],
+    recommendations:{
+      1:["Eine 2-stündige Basis-Schulung „KI-Grundlagen & Prompting“ für eine erste Pilotgruppe organisieren.",
+         "Eine kuratierte Liste von 3–5 Lernressourcen an alle Mitarbeitenden verteilen."],
+      2:["Ein Lunch-&-Learn-Format (z. B. alle 2 Wochen) zu konkreten KI-Anwendungsfällen etablieren.",
+         "5–10 Power-User identifizieren und gezielt vertiefend schulen."],
+      3:["Ein rollenbasiertes Trainingscurriculum (Basis/Fortgeschritten/Experte) mit Zertifizierung entwickeln.",
+         "Ein internes Power-User-Netzwerk mit fester Austauschstruktur (z. B. monatliches Forum) aufsetzen."],
+      4:["KI-Kompetenz als festen Bestandteil in Zielvereinbarungen und Weiterbildungsbudgets verankern.",
+         "Ein internes Trainer-Netzwerk aufbauen, das Schulungen eigenständig skaliert (Train-the-Trainer)."],
+      5:["Kompetenzentwicklung kontinuierlich an neue KI-Fähigkeiten anpassen (jährliches Update des Curriculums).",
+         "Externe Sichtbarkeit aufbauen (Fachartikel, Konferenzbeiträge), um Talente anzuziehen."]
+    }
+  },
+  {
+    id:"kultur", short:"KUL", name:"Kultur & Mindset",
+    desc:"Offenheit, Fehlerkultur, Experimentierfreude",
+    questions:[
+      {id:"kultur_1", text:"Mitarbeitende erproben KI-Tools proaktiv und selbstständig.",
+       low:"Kaum Eigeninitiative, Abwarten dominiert.", high:"Hohe Experimentierfreude, viele Eigeninitiativen.",
+       criteria:["Es sind Einzelfälle bekannt, in denen Mitarbeitende von sich aus KI-Tools ausprobiert haben.",
+                 "Solche Eigeninitiativen werden im Team offen erzählt/geteilt.",
+                 "Mehrere Teams zeigen unabhängig voneinander Eigeninitiative.",
+                 "Es gibt einen sichtbaren „Wettbewerb der guten Ideen“ rund um KI-Anwendungen."]},
+      {id:"kultur_2", text:"Fehler beim Ausprobieren von KI werden als Lernchance akzeptiert.",
+       low:"Fehler werden sanktioniert oder vermieden.", high:"Offene Fehlerkultur, Lessons Learned werden geteilt.",
+       criteria:["Es sind keine Sanktionen für gescheiterte KI-Experimente bekannt.",
+                 "Mindestens eine Retrospektive/ein Rückblick zu einem gescheiterten Versuch hat stattgefunden.",
+                 "Lessons Learned aus Fehlversuchen wurden aktiv geteilt (z. B. im Team-Meeting).",
+                 "Es gibt ein etabliertes Format (z. B. Retro, Fuckup-Night), das Scheitern regelmäßig thematisiert."]},
+      {id:"kultur_3", text:"Führungskräfte leben den KI-Einsatz sichtbar vor.",
+       low:"Führung zeigt kein Vorbildverhalten.", high:"Führungskräfte nutzen und fördern KI aktiv sichtbar.",
+       criteria:["Mindestens eine Führungskraft nutzt nachweislich selbst KI-Tools.",
+                 "Diese Nutzung ist den Mitarbeitenden bekannt/sichtbar.",
+                 "Führungskräfte sprechen aktiv (z. B. in Meetings) über eigene KI-Erfahrungen.",
+                 "Mehrere Führungsebenen zeigen konsistent sichtbares Vorbildverhalten."]},
+      {id:"kultur_4", text:"Es gibt Raum/Zeit für Experimente außerhalb des Tagesgeschäfts.",
+       low:"Kein Freiraum, volle Auslastung im Tagesgeschäft.", high:"Feste Zeitkontingente/Formate für Experimente.",
+       criteria:["Einzelne Mitarbeitende berichten, sich informell Zeit für Experimente zu nehmen.",
+                 "Es gab mindestens ein offizielles Format (Hackathon, Innovation Day) zu KI.",
+                 "Feste Zeitkontingente sind für einzelne Teams vorgesehen (z. B. 10 % Zeit).",
+                 "Diese Zeitkontingente sind unternehmensweit verankert und werden nachweislich genutzt."]}
+    ],
+    recommendations:{
+      1:["Eine „KI-Ausprobierwoche“ initiieren, in der Teams risikofrei mit einem Tool experimentieren dürfen.",
+         "Eine Führungskraft als sichtbaren Sponsor gewinnen, der selbst mit KI-Tools arbeitet und berichtet."],
+      2:["Eine kurze Retrospektive nach Piloten einführen, in der offen über Fehler/Learnings gesprochen wird.",
+         "Feste Zeitfenster (z. B. 2 Std./Woche) für KI-Experimente in Pilotteams einrichten."],
+      3:["Erfolgsgeschichten aus Pilotteams aktiv im Intranet/Newsletter teilen, um Nachahmer zu gewinnen.",
+         "Ein internes „Fuckup-Format“ etablieren, in dem gescheiterte Experimente offen reflektiert werden."],
+      4:["Experimentierfreude durch ein internes Innovationsbudget/Hackathon-Format strukturell verankern.",
+         "Führungskräfte-Onboarding um verpflichtende KI-Praxiselemente erweitern."],
+      5:["Eine lernende Organisation etablieren, die Experimente kontinuierlich in Produkte/Prozesse überführt.",
+         "Innovationskultur nach außen tragen, z. B. Kunden/Partner in Experimente einbinden."]
+    }
+  },
+  {
+    id:"stakeholder", short:"STA", name:"Stakeholder-Akzeptanz & Kommunikation",
+    desc:"Informationsstand, Einbindung, Transparenz",
+    questions:[
+      {id:"stakeholder_1", text:"Betroffene sind über Ziele und Fortschritt informiert.",
+       low:"Kaum Information, Gerüchte dominieren.", high:"Regelmäßige, transparente Kommunikation über alle Kanäle.",
+       criteria:["Es gab mindestens eine Information (Mail/Meeting) zum Thema KI.",
+                 "Es existiert ein FAQ oder vergleichbares Informationsmaterial.",
+                 "Es gibt ein wiederkehrendes Update-Format (z. B. Newsletter).",
+                 "Mitarbeitende können auf Nachfrage aktuelle Ziele/Fortschritte korrekt wiedergeben."]},
+      {id:"stakeholder_2", text:"Mitarbeitende werden aktiv in die Gestaltung eingebunden.",
+       low:"Reine Top-Down-Entscheidung ohne Einbindung.", high:"Ko-Kreation, Feedback fließt sichtbar in Entscheidungen ein.",
+       criteria:["Es gab mindestens eine Gelegenheit, Feedback zu geben (z. B. Umfrage).",
+                 "Feedback wurde nachweislich gesammelt und dokumentiert.",
+                 "Es gab mindestens einen Co-Design-Workshop mit Mitarbeitenden.",
+                 "Sichtbare Entscheidungen wurden aufgrund von Mitarbeitenden-Feedback angepasst."]},
+      {id:"stakeholder_3", text:"Betriebsrat/Mitbestimmung ist frühzeitig eingebunden.",
+       low:"Nicht oder erst spät eingebunden.", high:"Frühzeitige, konstruktive Zusammenarbeit.",
+       criteria:["Der Betriebsrat wurde zumindest informiert.",
+                 "Es gab mindestens ein Gespräch/eine Abstimmung vor Einführung eines Tools.",
+                 "Es existiert eine Betriebsvereinbarung oder vergleichbare Regelung zu KI.",
+                 "Der Betriebsrat ist regelhaft in neue KI-Vorhaben eingebunden (nicht nur einmalig)."]},
+      {id:"stakeholder_4", text:"Der Nutzen von KI wird für Mitarbeitende konkret erlebbar gemacht.",
+       low:"Abstrakte Versprechen ohne erlebbaren Nutzen.", high:"Konkrete Erfolgsgeschichten/Quick-Wins sichtbar.",
+       criteria:["Es gibt mindestens eine konkrete Erfolgsgeschichte, die kommuniziert wurde.",
+                 "Der Nutzen ist mit einer Zahl/einem Beispiel belegt (z. B. Zeitersparnis).",
+                 "Mehrere Erfolgsgeschichten aus unterschiedlichen Teams sind bekannt.",
+                 "Mitarbeitende berichten von sich aus (ungefragt) über erlebten Nutzen."]}
+    ],
+    recommendations:{
+      1:["Eine erste Town-Hall/Info-Mail ansetzen, die Ziel und Zeitplan der KI-Initiative transparent macht.",
+         "Ein FAQ-Dokument erstellen, das häufige Fragen/Sorgen proaktiv beantwortet."],
+      2:["Ein regelmäßiges Update-Format (z. B. monatlicher Newsletter) mit Fortschritt einführen.",
+         "Einen Feedback-Kanal (Umfrage, Ideenbox) einrichten, um Stimmungsbild und Anliegen zu erfassen."],
+      3:["Mitarbeitende aktiv in Pilotgestaltung einbinden (z. B. Co-Design-Workshops).",
+         "Konkrete Quick-Wins mit Zahlen kommunizieren (z. B. „X Stunden pro Woche gespart“)."],
+      4:["Ein strukturiertes Stakeholder-Mapping mit individuellen Kommunikationsplänen je Zielgruppe pflegen.",
+         "Mitarbeitende als Botschafter aktiv in externe Kommunikation einbinden."],
+      5:["Kommunikation zu einem kontinuierlichen Dialogformat weiterentwickeln (z. B. reguläre Q&A mit GL).",
+         "Transparenz-Standards für KI-Kommunikation auch extern etablieren."]
+    }
+  },
+  {
+    id:"widerstaende", short:"WID", name:"Widerstände & Multiplikatoren",
+    desc:"Umgang mit Skepsis, Change Agents",
+    questions:[
+      {id:"widerstaende_1", text:"Es gibt identifizierte Change Agents/Multiplikatoren in den Teams.",
+       low:"Keine erkennbaren Multiplikatoren.", high:"Aktives, geschultes Netzwerk an Change Agents je Bereich.",
+       criteria:["Mindestens eine Person wurde informell als Befürworter/Multiplikator identifiziert.",
+                 "Diese Rolle ist offiziell benannt (z. B. „KI-Buddy“, „Champion“).",
+                 "Es gibt Multiplikatoren in mehreren Teams/Bereichen.",
+                 "Die Multiplikatoren tauschen sich in einem festen Netzwerk aus."]},
+      {id:"widerstaende_2", text:"Skepsis/Ängste (z. B. Jobsorgen) werden aktiv adressiert.",
+       low:"Ängste werden ignoriert oder verdrängt.", high:"Ängste werden offen thematisiert und begleitet.",
+       criteria:["Es ist bekannt, dass Ängste/Skepsis im Team existieren (auch wenn bisher unadressiert).",
+                 "Mindestens ein Gespräch/Format hat diese Sorgen explizit aufgegriffen.",
+                 "Es existiert konkretes Kommunikationsmaterial zu diesem Thema (z. B. FAQ zu Jobsicherheit).",
+                 "Es gibt eine kontinuierliche, proaktive Begleitung dieser Sorgen (z. B. regelmäßige Gesprächsrunden)."]},
+      {id:"widerstaende_3", text:"Kritiker werden gezielt eingebunden statt umgangen.",
+       low:"Kritiker werden ausgegrenzt oder ignoriert.", high:"Kritiker werden gezielt als Sparringspartner eingebunden.",
+       criteria:["Kritische Stimmen sind namentlich bekannt.",
+                 "Mindestens ein Gespräch mit einem/einer Kritiker:in hat stattgefunden.",
+                 "Kritiker wurden aktiv in eine Testphase/einen Piloten eingebunden.",
+                 "Feedback von Kritikern hat nachweislich zu Anpassungen geführt."]},
+      {id:"widerstaende_4", text:"Widerstände werden systematisch erfasst und nachverfolgt.",
+       low:"Kein systematisches Monitoring von Widerständen.", high:"Stakeholder-/Widerstands-Mapping wird aktiv gepflegt.",
+       criteria:["Widerstände werden zumindest mündlich zur Kenntnis genommen.",
+                 "Es gibt eine einfache Liste/ein Dokument, in dem Widerstände gesammelt werden.",
+                 "Für erfasste Widerstände sind Maßnahmen/Verantwortliche hinterlegt.",
+                 "Das Widerstands-Mapping wird regelmäßig aktualisiert und im Projektteam besprochen."]}
+    ],
+    recommendations:{
+      1:["Eine erste Stakeholder-Analyse (Befürworter/Skeptiker) als einfache Liste erstellen.",
+         "1:1-Gespräche mit den einflussreichsten Skeptikern führen, um Sorgen konkret zu verstehen."],
+      2:["Erste Change Agents in Pilotteams benennen und mit klarem Mandat ausstatten.",
+         "Ein „Sorgen-Register“ anlegen, in dem Bedenken gesammelt und mit Maßnahmen beantwortet werden."],
+      3:["Ein strukturiertes Multiplikatoren-Netzwerk je Fachbereich mit regelmäßigem Austausch aufbauen.",
+         "Kritiker gezielt in Testphasen als „Quality Gate“ einbinden."],
+      4:["Multiplikatoren-Netzwerk mit eigenem Budget/Mandat für lokale Initiativen ausstatten.",
+         "Ein Frühwarnsystem für Widerstände etablieren (z. B. regelmäßige Pulse-Checks)."],
+      5:["Multiplikatoren-Netzwerk fest in der Führungskräfteentwicklung verankern.",
+         "Widerstands-Management als Standardprozess in jedes neue Change-/KI-Projekt integrieren."]
+    }
+  }
+];
+
+/* =========================================================================
+   STATE
+   ========================================================================= */
+const state = {
+  step:"angaben",
+  mode:"consultant",
+  answers:{},      // qid -> 1..5 (finale Bewertung, ggf. manuell übersteuert)
+  criteria:{},     // qid -> [bool,bool,bool,bool] Evidence-Kriterien
+  overridden:new Set(), // qids, bei denen die Bewertung manuell vom Vorschlag abweicht
+  answered:new Set(),
+  dimNotes:{},     // dimId -> text
+  meta:{kunde:"",bereich:"",consultant:"",datum:"",kontext:""},
+  globalNotes:"",
+  dimOpen:{},
+  agent:{
+    provider:"anthropic", apiKey:"", model:"claude-sonnet-5", enabled:false,
+    customEndpoint:"", customModel:"", customAuthType:"bearer", customAuthValue:""
+  },
+  agentEvidence:{},  // qid -> {idx: evidenceText}
+  agentStatus:{},    // dimId -> {type:'pending'|'ok'|'error', text:string}
+  agentCopilot:{},   // dimId -> {question, rationale, status}
+  agentSummary:{consultant:null, kunde:null} // {text,status,error}
+};
+DIMENSIONS.forEach((d,i)=>{
+  state.dimOpen[d.id] = (i===0);
+  d.questions.forEach(q=>{ state.answers[q.id]=1; state.criteria[q.id]=[false,false,false,false]; });
+});
+
+let radarChart = null;
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+function scoreToStage(score){
+  if(score<=1.8) return 1;
+  if(score<=2.6) return 2;
+  if(score<=3.4) return 3;
+  if(score<=4.2) return 4;
+  return 5;
+}
+function stageInfo(level){ return STAGES.find(s=>s.level===level); }
+function findDim(qid){ return DIMENSIONS.find(d=>d.questions.some(q=>q.id===qid)); }
+function suggestedScore(qid){
+  const arr = state.criteria[qid] || [];
+  return arr.filter(Boolean).length + 1; // 0 Kriterien = Stufe 1, 4 Kriterien = Stufe 5
+}
+
+function dimAverage(dim){
+  const vals = dim.questions.map(q=>state.answers[q.id]);
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+function overallAverage(){
+  const avgs = DIMENSIONS.map(dimAverage);
+  return avgs.reduce((a,b)=>a+b,0)/avgs.length;
+}
+function scanText(text){
+  if(!text) return {pos:[],risk:[]};
+  const t = text.toLowerCase();
+  const pos = POSITIVE_KEYWORDS.filter(k=>t.includes(k));
+  const risk = RISK_KEYWORDS.filter(k=>t.includes(k));
+  return {pos,risk};
+}
+function fmt1(n){ return n.toFixed(1).replace(".",","); }
+function esc(s){ return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* =========================================================================
+   AGENT: Anbindung an die Claude API (optional, clientseitig)
+   ========================================================================= */
+async function callAgent(systemPrompt, userPrompt, maxTokens){
+  if(state.agent.provider === "custom"){ return callAgentCustom(systemPrompt, userPrompt, maxTokens); }
+  return callAgentAnthropic(systemPrompt, userPrompt, maxTokens);
+}
+
+async function callAgentAnthropic(systemPrompt, userPrompt, maxTokens){
+  if(!state.agent.apiKey){ throw new Error("Kein API-Key hinterlegt."); }
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key": state.agent.apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({
+      model: state.agent.model,
+      max_tokens: maxTokens || 500,
+      system: systemPrompt,
+      messages:[{role:"user", content:userPrompt}]
+    })
+  });
+  let data = null;
+  try{ data = await res.json(); } catch(e){ /* keine JSON-Antwort */ }
+  if(!res.ok){
+    const msg = (data && data.error && data.error.message) || (res.status+" "+res.statusText);
+    throw new Error(msg);
+  }
+  return (data && data.content && data.content[0] && data.content[0].text) || "";
+}
+
+/* Generischer Adapter für einen eigenen/internen Endpunkt (z. B. adesso GPT).
+   Erwartet standardmäßig ein OpenAI-kompatibles Chat-Completions-Format.
+   Auth-Header und Endpoint sind über die Einstellungen konfigurierbar. */
+async function callAgentCustom(systemPrompt, userPrompt, maxTokens){
+  const cfg = state.agent;
+  if(!cfg.customEndpoint){ throw new Error("Keine Endpunkt-URL hinterlegt."); }
+  const headers = {"content-type":"application/json"};
+  if(cfg.customAuthType === "bearer" && cfg.customAuthValue){ headers["Authorization"] = "Bearer "+cfg.customAuthValue; }
+  if(cfg.customAuthType === "apikey" && cfg.customAuthValue){ headers["api-key"] = cfg.customAuthValue; }
+
+  const res = await fetch(cfg.customEndpoint, {
+    method:"POST",
+    headers,
+    body: JSON.stringify({
+      model: cfg.customModel || undefined,
+      max_tokens: maxTokens || 500,
+      messages:[
+        {role:"system", content:systemPrompt},
+        {role:"user", content:userPrompt}
+      ]
+    })
+  });
+  let data = null;
+  try{ data = await res.json(); } catch(e){ /* keine JSON-Antwort */ }
+  if(!res.ok){
+    const msg = (data && data.error && (data.error.message||data.error)) || (res.status+" "+res.statusText);
+    throw new Error(typeof msg === "string" ? msg : JSON.stringify(msg));
+  }
+  // Robust gegen mehrere gängige Antwortformate
+  if(data && data.choices && data.choices[0]){
+    const c = data.choices[0];
+    if(c.message && typeof c.message.content === "string") return c.message.content;
+    if(typeof c.text === "string") return c.text;
+  }
+  if(data && typeof data.content === "string") return data.content;
+  if(data && data.content && data.content[0] && data.content[0].text) return data.content[0].text;
+  if(data && typeof data.result === "string") return data.result;
+  throw new Error("Unbekanntes Antwortformat vom Endpunkt – bitte Response-Struktur in den Entwicklertools (Network-Tab) prüfen und callAgentCustom() im Code anpassen.");
+}
+
+async function testAgentConnection(){
+  const btn = document.getElementById("btnTestAgent");
+  const statusEl = document.getElementById("agentTestStatus");
+  btn.disabled = true;
+  statusEl.textContent = "Prüfe Verbindung ...";
+  statusEl.className = "agent-status pending";
+  const label = state.agent.provider==="custom" ? (state.agent.customModel||"eigener Endpunkt") : state.agent.model;
+  try{
+    await callAgent("Antworte ausschließlich mit dem einzelnen Wort OK.", "Verbindungstest", 10);
+    statusEl.textContent = "✓ Verbunden ("+label+")";
+    statusEl.className = "agent-status ok";
+    state.agent.enabled = true;
+  } catch(err){
+    statusEl.textContent = "✗ Fehler: "+err.message;
+    statusEl.className = "agent-status error";
+    state.agent.enabled = false;
+  } finally {
+    btn.disabled = false;
+    document.getElementById("agentBadge").style.display = state.agent.enabled ? "inline-block" : "none";
+    if(state.step==="erhebung"){ renderErhebung(); }
+    if(state.step==="auswertung"){ renderReport(); }
+  }
+}
+
+function resetAgentTestState(){
+  state.agent.enabled = false;
+  document.getElementById("agentTestStatus").textContent = "";
+  document.getElementById("agentTestStatus").className = "agent-status";
+  document.getElementById("agentBadge").style.display = "none";
+}
+
+document.getElementById("agentProvider").addEventListener("change",(e)=>{
+  state.agent.provider = e.target.value;
+  document.getElementById("providerFieldsAnthropic").style.display = state.agent.provider==="anthropic" ? "block" : "none";
+  document.getElementById("providerFieldsCustom").style.display = state.agent.provider==="custom" ? "block" : "none";
+  resetAgentTestState();
+});
+document.getElementById("agentApiKey").addEventListener("input",(e)=>{
+  state.agent.apiKey = e.target.value;
+  resetAgentTestState();
+});
+document.getElementById("agentModel").addEventListener("change",(e)=>{
+  state.agent.model = e.target.value;
+  resetAgentTestState();
+});
+document.getElementById("customEndpoint").addEventListener("input",(e)=>{
+  state.agent.customEndpoint = e.target.value;
+  resetAgentTestState();
+});
+document.getElementById("customModel").addEventListener("input",(e)=>{
+  state.agent.customModel = e.target.value;
+  resetAgentTestState();
+});
+document.getElementById("customAuthType").addEventListener("change",(e)=>{
+  state.agent.customAuthType = e.target.value;
+  resetAgentTestState();
+});
+document.getElementById("customAuthValue").addEventListener("input",(e)=>{
+  state.agent.customAuthValue = e.target.value;
+  resetAgentTestState();
+});
+
+/* =========================================================================
+   NAVIGATION
+   ========================================================================= */
+function goToStep(step){
+  state.step = step;
+  document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+  document.getElementById("panel-"+step).classList.add("active");
+  document.querySelectorAll(".stepper .step").forEach(s=>{
+    s.classList.toggle("active", s.dataset.step===step);
+  });
+  const order=["angaben","erhebung","auswertung"];
+  const idx = order.indexOf(step);
+  document.querySelectorAll(".stepper .step").forEach((s,i)=>{
+    s.classList.toggle("done", order.indexOf(s.dataset.step) < idx);
+  });
+  if(step==="erhebung"){ renderErhebung(); }
+  if(step==="auswertung"){ renderReport(); }
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll(".stepper .step").forEach(s=>{
+  s.addEventListener("click", ()=>goToStep(s.dataset.step));
+});
+document.getElementById("modeToggle").addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  state.mode = btn.dataset.mode;
+  document.querySelectorAll("#modeToggle button").forEach(b=>b.classList.toggle("active", b===btn));
+  document.body.classList.toggle("mode-kunde", state.mode==="kunde");
+  document.body.classList.toggle("mode-consultant", state.mode==="consultant");
+  if(state.step==="auswertung"){ renderReport(); }
+});
+
+/* =========================================================================
+   RENDER: ERHEBUNG (STEP 2)
+   ========================================================================= */
+function renderErhebung(){
+  const container = document.getElementById("dimContainer");
+  container.innerHTML = DIMENSIONS.map(dim=>{
+    const avg = dimAverage(dim);
+    return `
+    <div class="card dim-card ${state.dimOpen[dim.id]?'open':''}" id="card-${dim.id}">
+      <div class="dim-header" onclick="toggleDim('${dim.id}')">
+        <div class="dim-header-left">
+          <div class="dim-icon">${dim.short}</div>
+          <div>
+            <div class="dim-name">${dim.name}</div>
+            <div class="dim-desc">${dim.desc}</div>
+          </div>
+        </div>
+        <div class="dim-header-right">
+          <span class="dim-score-badge" id="badge-${dim.id}">Ø ${fmt1(avg)}</span>
+          <span class="chevron">▾</span>
+        </div>
+      </div>
+      <div class="dim-body">
+        <div class="dim-body-inner">
+          ${dim.questions.map(q=>{
+            const suggested = suggestedScore(q.id);
+            const current = state.answers[q.id];
+            const isOverridden = state.overridden.has(q.id);
+            return `
+            <div class="question">
+              <div class="question-text">${q.text}</div>
+              <div class="anchor-hint"><span>1 = ${q.low}</span><span>5 = ${q.high}</span></div>
+              <div class="criteria-list">
+                ${q.criteria.map((c,ci)=>{
+                  const ev = (state.agentEvidence[q.id]||{})[ci];
+                  return `
+                  <label class="criterion ${ev?'agent-suggested':''}">
+                    <div class="criterion-row">
+                      <input type="checkbox" data-qid="${q.id}" data-idx="${ci}" ${state.criteria[q.id][ci]?"checked":""}>
+                      <span>${c}</span>
+                    </div>
+                    ${ev?`<div class="agent-evidence">🤖 „${esc(ev)}“</div>`:""}
+                  </label>`;
+                }).join("")}
+              </div>
+              <div class="score-row">
+                Automatischer Vorschlag aus den Kriterien: <b id="suggest-${q.id}">${suggested}</b>/5
+                <span class="score-hint">(Anzahl erfüllter Kriterien&nbsp;+&nbsp;1)</span>
+              </div>
+              <div class="override-row">
+                <span class="override-label">Ihre Bewertung:</span>
+                <input type="range" min="1" max="5" step="1" value="${current}"
+                  class="q-slider" data-qid="${q.id}" data-dim="${dim.id}">
+                <span class="val-pill" id="val-${q.id}">${current}</span>
+                <button type="button" class="btn-sync" id="sync-${q.id}" style="display:${isOverridden?'inline-block':'none'}">↺ Vorschlag übernehmen</button>
+              </div>
+            </div>`;
+          }).join("")}
+          <div class="freitext-block">
+            <label>Beobachtungen aus Interviews/Workshops zu „${dim.name}“ (optional)</label>
+            <textarea data-dimnote="${dim.id}" placeholder="Freitext-Notizen ...">${state.dimNotes[dim.id]||""}</textarea>
+            ${state.agent.enabled ? `
+            <div class="agent-row no-print">
+              <button type="button" class="btn-agent" id="agent-btn-${dim.id}" onclick="agentAnalyzeDim('${dim.id}')">🤖 Agent: Notizen analysieren</button>
+              <button type="button" class="btn-agent" id="copilot-btn-${dim.id}" onclick="agentSuggestQuestion('${dim.id}')">🤖 Nächste Frage vorschlagen</button>
+              ${state.agentStatus[dim.id] ? `<span class="agent-status ${state.agentStatus[dim.id].type}" id="agent-status-${dim.id}">${esc(state.agentStatus[dim.id].text)}</span>` : `<span class="agent-status" id="agent-status-${dim.id}"></span>`}
+            </div>
+            ${state.agentCopilot[dim.id] ? `
+            <div class="agent-copilot-box">
+              <b>🤖 Vorschlag für die nächste Frage:</b> „${esc(state.agentCopilot[dim.id].question)}“<br>
+              <span style="font-size:12px;color:var(--ink-faint);">${esc(state.agentCopilot[dim.id].rationale||"")}</span>
+            </div>` : ""}
+            ` : ""}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+
+  function refreshDimBadge(dim){
+    document.getElementById("badge-"+dim.id).textContent = "Ø "+fmt1(dimAverage(dim));
+  }
+
+  container.querySelectorAll(".criteria-list input[type=checkbox]").forEach(cb=>{
+    cb.addEventListener("change",(e)=>{
+      const qid = e.currentTarget.dataset.qid, idx = parseInt(e.currentTarget.dataset.idx,10);
+      state.criteria[qid][idx] = e.currentTarget.checked;
+      const suggested = suggestedScore(qid);
+      document.getElementById("suggest-"+qid).textContent = suggested;
+      state.answered.add(qid);
+      if(!state.overridden.has(qid)){
+        state.answers[qid] = suggested;
+        const slider = container.querySelector(`.q-slider[data-qid="${qid}"]`);
+        slider.value = suggested;
+        document.getElementById("val-"+qid).textContent = suggested;
+      }
+      refreshDimBadge(findDim(qid));
+      updateProgress();
+    });
+  });
+
+  container.querySelectorAll(".q-slider").forEach(sl=>{
+    sl.addEventListener("input", (e)=>{
+      const qid = e.currentTarget.dataset.qid;
+      const val = parseInt(e.currentTarget.value,10);
+      state.answers[qid] = val;
+      state.answered.add(qid);
+      document.getElementById("val-"+qid).textContent = val;
+      const suggested = suggestedScore(qid);
+      const syncBtn = document.getElementById("sync-"+qid);
+      if(val !== suggested){ state.overridden.add(qid); syncBtn.style.display = "inline-block"; }
+      else { state.overridden.delete(qid); syncBtn.style.display = "none"; }
+      refreshDimBadge(findDim(qid));
+      updateProgress();
+    });
+  });
+
+  container.querySelectorAll(".btn-sync").forEach(btn=>{
+    btn.addEventListener("click",(e)=>{
+      const qid = e.currentTarget.id.replace("sync-","");
+      const suggested = suggestedScore(qid);
+      state.answers[qid] = suggested;
+      state.overridden.delete(qid);
+      const slider = container.querySelector(`.q-slider[data-qid="${qid}"]`);
+      slider.value = suggested;
+      document.getElementById("val-"+qid).textContent = suggested;
+      e.currentTarget.style.display = "none";
+      refreshDimBadge(findDim(qid));
+    });
+  });
+
+  container.querySelectorAll("[data-dimnote]").forEach(ta=>{
+    ta.addEventListener("input",(e)=>{ state.dimNotes[e.target.dataset.dimnote] = e.target.value; });
+  });
+  updateProgress();
+}
+
+/* ---------- Feature A: Evidence-Mining-Agent ---------- */
+async function agentAnalyzeDim(dimId){
+  const dim = DIMENSIONS.find(d=>d.id===dimId);
+  const notes = (state.dimNotes[dimId]||"").trim();
+  if(!notes){ alert("Bitte zuerst Freitext-Notizen für diese Dimension eingeben."); return; }
+  const btn = document.getElementById("agent-btn-"+dimId);
+  btn.disabled = true;
+  state.agentStatus[dimId] = {type:"pending", text:"🤖 Agent analysiert Notizen ..."};
+  renderErhebung();
+
+  const system = "Du bist ein präziser Analyse-Assistent für ein Reifegrad-Assessment im Change Management. "+
+    "Du bekommst Interview-Notizen sowie eine Liste von Fragen mit jeweils 4 Ja/Nein-Kriterien. "+
+    "Prüfe für JEDES Kriterium, ob es durch die Notizen belegt ist. Antworte AUSSCHLIESSLICH mit validem JSON "+
+    "(kein Markdown-Codeblock, kein Erklärtext) als Array von Objekten mit den Feldern "+
+    "questionId (string), criteriaIndex (Zahl 0-3), supported (true/false), evidence (kurzes deutsches Zitat, oder leerer String falls nicht belegt).";
+  let userPrompt = "INTERVIEW-NOTIZEN:\n"+notes+"\n\nFRAGEN UND KRITERIEN:\n";
+  dim.questions.forEach(q=>{
+    userPrompt += `\nFrage ${q.id}: ${q.text}\n`;
+    q.criteria.forEach((c,i)=>{ userPrompt += `  [${i}] ${c}\n`; });
+  });
+
+  try{
+    const raw = await callAgent(system, userPrompt, 1000);
+    const jsonStr = raw.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"");
+    const results = JSON.parse(jsonStr);
+    let applied = 0;
+    results.forEach(r=>{
+      if(!state.criteria[r.questionId]) return;
+      if(r.supported){
+        state.criteria[r.questionId][r.criteriaIndex] = true;
+        if(!state.agentEvidence[r.questionId]) state.agentEvidence[r.questionId] = {};
+        state.agentEvidence[r.questionId][r.criteriaIndex] = r.evidence || "Agent-Einschätzung ohne Zitat";
+        applied++;
+      }
+    });
+    dim.questions.forEach(q=>{
+      if(!state.overridden.has(q.id)){ state.answers[q.id] = suggestedScore(q.id); }
+    });
+    state.answered.add(dim.questions[0].id);
+    state.agentStatus[dimId] = {type:"ok", text:"✓ Agent hat "+applied+" von "+(dim.questions.length*4)+" Kriterien als erfüllt markiert."};
+  } catch(err){
+    state.agentStatus[dimId] = {type:"error", text:"✗ Fehler: "+err.message};
+  } finally {
+    renderErhebung();
+  }
+}
+
+/* ---------- Feature C: Adaptiver Interview-Copilot ---------- */
+async function agentSuggestQuestion(dimId){
+  const dim = DIMENSIONS.find(d=>d.id===dimId);
+  const btn = document.getElementById("copilot-btn-"+dimId);
+  btn.disabled = true;
+  state.agentStatus[dimId] = {type:"pending", text:"🤖 Agent sucht die nächste sinnvolle Frage ..."};
+  renderErhebung();
+
+  const system = "Du bist ein erfahrener Change-Management-Interviewer. Du bekommst den aktuellen Erhebungsstand zu einer Reifegrad-Dimension "+
+    "(Fragen, Kriterien, welche davon bereits als erfüllt markiert sind, sowie bisherige Freitext-Notizen). "+
+    "Schlage GENAU EINE konkrete, konversationelle Interviewfrage in deutscher Sprache vor, die im Gespräch die größte verbleibende Unklarheit klären würde. "+
+    "Antworte AUSSCHLIESSLICH in exakt diesem Format (zwei Zeilen, keine weiteren Erklärungen):\nFrage: <deine Frage>\nBegründung: <ein Satz>";
+  let userPrompt = `Dimension: ${dim.name}\n\n`;
+  dim.questions.forEach(q=>{
+    userPrompt += `Frage ${q.id}: ${q.text}\n`;
+    q.criteria.forEach((c,i)=>{ userPrompt += `  [${state.criteria[q.id][i]?"✓ erfüllt":"noch offen"}] ${c}\n`; });
+  });
+  userPrompt += "\nBisherige Freitext-Notizen: "+((state.dimNotes[dimId]||"").trim() || "(keine)");
+
+  try{
+    const raw = await callAgent(system, userPrompt, 250);
+    const fMatch = raw.match(/Frage:\s*(.+)/i);
+    const bMatch = raw.match(/Begründung:\s*(.+)/i);
+    state.agentCopilot[dimId] = {
+      question: fMatch ? fMatch[1].trim() : raw.trim(),
+      rationale: bMatch ? bMatch[1].trim() : ""
+    };
+    state.agentStatus[dimId] = {type:"ok", text:"✓ Vorschlag aktualisiert."};
+  } catch(err){
+    state.agentStatus[dimId] = {type:"error", text:"✗ Fehler: "+err.message};
+  } finally {
+    renderErhebung();
+  }
+}
+
+function toggleDim(dimId){
+  state.dimOpen[dimId] = !state.dimOpen[dimId];
+  document.getElementById("card-"+dimId).classList.toggle("open", state.dimOpen[dimId]);
+}
+function updateProgress(){
+  const total = DIMENSIONS.reduce((n,d)=>n+d.questions.length,0);
+  const answered = state.answered.size;
+  document.getElementById("progressFill").style.width = (answered/total*100)+"%";
+  document.getElementById("progressText").textContent = answered+" / "+total+" Fragen aktiv verändert";
+}
+
+/* Meta fields binding */
+["metaKunde","metaBereich","metaConsultant","metaDatum","metaKontext"].forEach(id=>{
+  document.getElementById(id).addEventListener("input",(e)=>{
+    const map={metaKunde:"kunde",metaBereich:"bereich",metaConsultant:"consultant",metaDatum:"datum",metaKontext:"kontext"};
+    state.meta[map[id]] = e.target.value;
+  });
+});
+document.getElementById("globalNotes").addEventListener("input",(e)=>{ state.globalNotes = e.target.value; });
+(function initDate(){
+  const d = new Date();
+  const iso = d.toISOString().slice(0,10);
+  document.getElementById("metaDatum").value = iso;
+  state.meta.datum = iso;
+})();
+
+/* =========================================================================
+   RENDER: AUSWERTUNG (STEP 3)
+   ========================================================================= */
+function computeResults(){
+  const dims = DIMENSIONS.map(dim=>{
+    const avg = dimAverage(dim);
+    const stage = scoreToStage(avg);
+    const scan = scanText(state.dimNotes[dim.id]);
+    return {dim, avg, stage, scan, note: state.dimNotes[dim.id]||""};
+  });
+  const overallAvg = overallAverage();
+  const overallStage = scoreToStage(overallAvg);
+  const sorted = [...dims].sort((a,b)=>a.avg-b.avg);
+  const top3 = sorted.slice(0,3);
+  return {dims, overallAvg, overallStage, top3};
+}
+
+function renderReport(){
+  const R = computeResults();
+  document.getElementById("reportMetaLine").innerHTML =
+    `<b>${esc(state.meta.kunde)||"Kunde n. a."}</b> · ${esc(state.meta.bereich)||"Fachbereich n. a."} · Consultant: ${esc(state.meta.consultant)||"–"} · ${esc(state.meta.datum)}`;
+
+  const root = document.getElementById("reportRoot");
+  root.innerHTML = renderConsultantView(R) + renderKundeView(R);
+
+  // Charts (nach dem Einfügen ins DOM)
+  buildRadar("radarConsultant", R);
+  buildRadar("radarKunde", R);
+}
+
+function stageChipHtml(stage){
+  const s = stageInfo(stage);
+  return `<span class="stage-chip" style="background:${s.hex};color:${s.textColor}">Stufe ${s.level} · ${s.name}</span>`;
+}
+
+function agentSummaryBoxHtml(viewMode){
+  if(!state.agent.enabled) return "";
+  const sum = state.agentSummary[viewMode];
+  let inner, printable;
+  if(!sum){
+    inner = `<button type="button" class="btn-agent no-print" onclick="agentGenerateSummary('${viewMode}')">🤖 Agent-Zusammenfassung generieren</button>`;
+    printable = false;
+  } else if(sum.status==="pending"){
+    inner = `<span class="agent-status pending no-print">🤖 Agent formuliert die Zusammenfassung ...</span>`;
+    printable = false;
+  } else if(sum.status==="error"){
+    inner = `<span class="agent-status error no-print">✗ Fehler: ${esc(sum.error)}</span>
+      <div class="no-print" style="margin-top:8px;"><button type="button" class="btn-agent" onclick="agentGenerateSummary('${viewMode}')">Erneut versuchen</button></div>`;
+    printable = false;
+  } else {
+    inner = `<span class="agent-tag">🤖 KI-generiert</span>
+      <p>${esc(sum.text).replace(/\n+/g,"<br><br>")}</p>
+      <div class="no-print" style="margin-top:10px;"><button type="button" class="btn-agent" onclick="agentGenerateSummary('${viewMode}')">Neu generieren</button></div>`;
+    printable = true;
+  }
+  return `<div class="agent-summary-box ${printable?'':'no-print'}">${inner}</div>`;
+}
+
+async function agentGenerateSummary(viewMode){
+  const R = computeResults();
+  state.agentSummary[viewMode] = {status:"pending"};
+  renderReport();
+
+  const dimLines = R.dims.map(d=>`- ${d.dim.name}: Score ${fmt1(d.avg)}/5, Stufe ${d.stage} (${stageInfo(d.stage).name})${d.note?" — Notiz: "+d.note:""}`).join("\n");
+  const top3Lines = R.top3.map((t,i)=>`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0]}`).join("\n");
+  const dataBlock = `Kunde/Bereich: ${state.meta.kunde||"n/a"} / ${state.meta.bereich||"n/a"}\n`+
+    `Gesamt-Reifegrad: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n\n`+
+    `Scores je Dimension:\n${dimLines}\n\nTop-3 Handlungsempfehlungen:\n${top3Lines}`;
+
+  const system = viewMode==="kunde"
+    ? "Du bist Berater:in bei adesso und formulierst die Zusammenfassung eines KI-Reifegrad-Assessments für eine Kunden-Präsentation. "+
+      "Ton: positiv, wertschätzend, seriös, professionell, nicht übertrieben werblich. Erfinde KEINE Fakten, nutze ausschließlich die gegebenen Daten. "+
+      "Schreibe 3-4 zusammenhängende Sätze auf Deutsch (kein Bullet-Point, kein Markdown, keine Überschrift)."
+    : "Du bist ein erfahrener Change-Management-Berater und analysierst intern die Ergebnisse eines KI-Reifegrad-Assessments. "+
+      "Ton: analytisch, direkt, professionell. Erfinde KEINE Fakten, nutze ausschließlich die gegebenen Daten. "+
+      "Schreibe 4-5 zusammenhängende Sätze auf Deutsch (kein Bullet-Point, kein Markdown, keine Überschrift), die die wichtigsten Muster, Risiken und den Handlungsschwerpunkt benennen.";
+
+  try{
+    const text = await callAgent(system, dataBlock, 500);
+    state.agentSummary[viewMode] = {status:"ok", text: text.trim()};
+  } catch(err){
+    state.agentSummary[viewMode] = {status:"error", error: err.message};
+  } finally {
+    renderReport();
+  }
+}
+
+function renderConsultantView(R){
+  const {dims, overallAvg, overallStage, top3} = R;
+  const os = stageInfo(overallStage);
+
+  const dimCards = dims.map(d=>{
+    const s = stageInfo(d.stage);
+    let notesHtml = "";
+    if(d.note){
+      notesHtml += `<div class="dim-notes">„${esc(d.note)}“</div>`;
+    }
+    let tagsHtml = "";
+    if(d.scan.pos.length || d.scan.risk.length){
+      tagsHtml = `<div class="tag-row">
+        ${d.scan.pos.map(k=>`<span class="tag pos">+ ${esc(k)}</span>`).join("")}
+        ${d.scan.risk.map(k=>`<span class="tag risk">⚠ ${esc(k)}</span>`).join("")}
+      </div>`;
+    }
+    const qBreak = d.dim.questions.map(q=>`${q.text.slice(0,22)}…: <b>${state.answers[q.id]}</b>`).join(" · ");
+    return `
+    <div class="card dim-result-card">
+      <div class="dim-result-top">
+        <h4>${d.dim.name}</h4>
+        ${stageChipHtml(d.stage)}
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${d.avg/5*100}%;background:${s.hex}"></div></div>
+      <div class="dim-result-score">Score: ${fmt1(d.avg)} / 5</div>
+      <div class="qbreak">${qBreak}</div>
+      ${notesHtml}
+      ${tagsHtml}
+    </div>`;
+  }).join("");
+
+  const top3Html = top3.map((t,i)=>{
+    const s = stageInfo(t.stage);
+    const rec = t.dim.recommendations[t.stage][0];
+    const gap = (5 - t.avg).toFixed(1).replace(".",",");
+    return `
+    <div class="top3-item">
+      <div class="top3-rank">${i+1}</div>
+      <div class="top3-body">
+        <b>${t.dim.name}</b> — ${stageChipHtml(t.stage)}
+        <p>${rec}</p>
+        <span class="top3-tag">Score ${fmt1(t.avg)}/5 · Lücke zum Optimum: ${gap} Punkte</span>
+      </div>
+    </div>`;
+  }).join("");
+
+  const libraryHtml = DIMENSIONS.map(dim=>`
+    <div class="lib-dim">
+      <h5>${dim.name}</h5>
+      ${STAGES.map(s=>`
+        <div class="lib-stage-row">
+          <div class="lib-stage-name"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.hex};margin-right:6px;"></span>Stufe ${s.level} – ${s.name}</div>
+          <div class="lib-stage-recs">${dim.recommendations[s.level].map(r=>`<div>• ${r}</div>`).join("")}</div>
+        </div>`).join("")}
+    </div>`).join("");
+
+  return `
+  <div class="consultant-view">
+    ${state.meta.kontext ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:16px;"><b style="font-size:12.5px;color:var(--ink-soft);">Projektkontext:</b> <span style="font-size:13px;">${esc(state.meta.kontext)}</span></div>`:""}
+    <div class="card overall-banner">
+      <div class="stage-badge-lg" style="background:${os.hex};color:${os.textColor}">
+        <span class="num">${os.level}</span><span class="of">von 5</span>
+      </div>
+      <div class="overall-text">
+        <h2>Gesamt-Reifegrad: ${os.name}</h2>
+        <p>${os.desc}</p>
+        <div class="overall-score-num">Gesamt-Score: ${fmt1(overallAvg)} / 5 (Mittelwert über alle 6 Dimensionen)</div>
+      </div>
+    </div>
+
+    ${agentSummaryBoxHtml('consultant')}
+
+    <div class="grid-2">
+      <div class="card chart-card">
+        <h3>Reifegrad je Dimension</h3>
+        <canvas id="radarConsultant" height="260"></canvas>
+      </div>
+      <div class="card top3-card">
+        <h3>Top-3 priorisierte Handlungsempfehlungen</h3>
+        ${top3Html}
+      </div>
+    </div>
+
+    <div class="dim-results-grid">${dimCards}</div>
+
+    <details class="card accordion-lib">
+      <summary>Alle Handlungsempfehlungen je Dimension &amp; Reifestufe anzeigen (Referenz)</summary>
+      ${libraryHtml}
+    </details>
+
+    ${state.globalNotes ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:20px;"><b style="font-size:12.5px;color:var(--ink-soft);">Globale Beobachtungen:</b><p style="font-size:13px;margin:6px 0 0;">${esc(state.globalNotes)}</p></div>` : ""}
+
+    <div class="btn-row no-print">
+      <button class="btn btn-ghost" id="btnStartOver" onclick="resetAll()">Assessment zurücksetzen</button>
+    </div>
+  </div>`;
+}
+
+function renderKundeView(R){
+  const {dims, overallAvg, overallStage, top3} = R;
+  const os = stageInfo(overallStage);
+  const sortedDesc = [...dims].sort((a,b)=>b.avg-a.avg);
+  const strengths = sortedDesc.slice(0,2);
+  const potentials = [...dims].sort((a,b)=>a.avg-b.avg).slice(0,2);
+
+  const strengthHtml = strengths.map(d=>`
+    <div class="kunde-mini-card">
+      <h5>${d.dim.name}</h5>
+      <p>${stageInfo(d.stage).name} — bereits ein Stärkefeld mit guter Basis für weitere Ausbau-Schritte.</p>
+    </div>`).join("");
+
+  const potentialHtml = potentials.map(d=>`
+    <div class="kunde-mini-card">
+      <h5>${d.dim.name}</h5>
+      <p>${d.dim.recommendations[d.stage][0]}</p>
+    </div>`).join("");
+
+  const stepsHtml = top3.map(t=>`
+    <div class="kunde-step">
+      <div class="kunde-step-num"></div>
+      <p><b>${t.dim.name}:</b> ${t.dim.recommendations[t.stage][0]}</p>
+    </div>`).join("");
+
+  return `
+  <div class="kunde-view">
+    <div class="card kunde-hero">
+      <div class="wordmark-sm">adesso</div>
+      <h2>KI-Reifegrad – Ergebnisüberblick</h2>
+      <div class="sub">${esc(state.meta.kunde)||"Kunde"} · ${esc(state.meta.bereich)||""} · ${esc(state.meta.datum)}</div>
+      <div class="stage-badge-lg" style="background:${os.hex};color:${os.textColor}">
+        <span class="num">${os.level}</span><span class="of">von 5</span>
+      </div>
+      <div class="stage-name" style="color:${os.hex}">${os.name}</div>
+      <div class="stage-desc">${os.desc}</div>
+    </div>
+
+    ${agentSummaryBoxHtml('kunde')}
+
+    <div class="card kunde-section">
+      <h3>Reifegrad je Handlungsfeld</h3>
+      <canvas id="radarKunde" height="260"></canvas>
+    </div>
+
+    <div class="card kunde-section">
+      <h3>Ihre Stärken</h3>
+      <div class="kunde-strength-grid">${strengthHtml}</div>
+    </div>
+
+    <div class="card kunde-section">
+      <h3>Handlungsfelder mit dem größten Potenzial</h3>
+      <div class="kunde-potential-grid">${potentialHtml}</div>
+    </div>
+
+    <div class="card kunde-section">
+      <h3>Empfohlene nächste Schritte</h3>
+      <div class="kunde-steps">${stepsHtml}</div>
+    </div>
+
+    <div class="kunde-footer">Vertraulich – erstellt von adesso für ${esc(state.meta.kunde)||"Kunde"} am ${esc(state.meta.datum)}.</div>
+  </div>`;
+}
+
+function buildRadar(canvasId, R){
+  const canvas = document.getElementById(canvasId);
+  if(!canvas) return;
+  const labels = DIMENSIONS.map(d=>d.name);
+  const data = R.dims.map(d=>d.avg);
+  if(typeof Chart === "undefined"){
+    canvas.replaceWith(fallbackChart(R));
+    return;
+  }
+  const ctx = canvas.getContext("2d");
+  new Chart(ctx, {
+    type:"radar",
+    data:{
+      labels,
+      datasets:[{
+        label:"Reifegrad (1-5)",
+        data,
+        backgroundColor:"rgba(0,110,199,0.15)",
+        borderColor:"#006EC7",
+        pointBackgroundColor:"#006EC7",
+        borderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{ r:{ min:0, max:5, ticks:{stepSize:1}, pointLabels:{font:{size:11}} } },
+      plugins:{ legend:{display:false} }
+    }
+  });
+}
+function fallbackChart(R){
+  const div = document.createElement("div");
+  div.innerHTML = R.dims.map(d=>`
+    <div style="display:flex;align-items:center;gap:8px;margin:6px 0;">
+      <span style="width:180px;font-size:12px;">${d.dim.name}</span>
+      <div style="flex:1;background:#eee;height:8px;border-radius:4px;overflow:hidden;">
+        <div style="width:${d.avg/5*100}%;background:#006EC7;height:100%;"></div>
+      </div>
+      <span style="font-size:12px;width:30px;">${fmt1(d.avg)}</span>
+    </div>`).join("");
+  return div;
+}
+
+/* =========================================================================
+   EXPORT: TEXT KOPIEREN
+   ========================================================================= */
+function buildSummaryText(){
+  const R = computeResults();
+  const os = stageInfo(R.overallStage);
+  let lines = [];
+  if(state.mode==="kunde"){
+    lines.push(`KI-REIFEGRAD – ERGEBNISÜBERBLICK`);
+    lines.push(`${state.meta.kunde||"Kunde"} · ${state.meta.bereich||""} · ${state.meta.datum}`);
+    lines.push("");
+    lines.push(`Gesamt-Reifegrad: Stufe ${os.level} – ${os.name}`);
+    lines.push(os.desc);
+    lines.push("");
+    lines.push("STÄRKEN:");
+    [...R.dims].sort((a,b)=>b.avg-a.avg).slice(0,2).forEach(d=>lines.push(`- ${d.dim.name} (${stageInfo(d.stage).name})`));
+    lines.push("");
+    lines.push("HANDLUNGSFELDER MIT POTENZIAL:");
+    [...R.dims].sort((a,b)=>a.avg-b.avg).slice(0,2).forEach(d=>lines.push(`- ${d.dim.name}: ${d.dim.recommendations[d.stage][0]}`));
+    lines.push("");
+    lines.push("EMPFOHLENE NÄCHSTE SCHRITTE:");
+    R.top3.forEach((t,i)=>lines.push(`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0]}`));
+    lines.push("");
+    lines.push(`Vertraulich – erstellt von adesso für ${state.meta.kunde||"Kunde"} am ${state.meta.datum}.`);
+  } else {
+    lines.push(`KI-REIFEGRAD-ASSESSMENT (CONSULTANT-ANSICHT)`);
+    lines.push(`Kunde: ${state.meta.kunde||"-"} | Fachbereich: ${state.meta.bereich||"-"} | Consultant: ${state.meta.consultant||"-"} | Datum: ${state.meta.datum}`);
+    lines.push("");
+    lines.push(`GESAMT-REIFEGRAD: Stufe ${os.level} – ${os.name} (Score ${fmt1(R.overallAvg)}/5)`);
+    lines.push(os.desc);
+    lines.push("");
+    lines.push("SCORES JE DIMENSION:");
+    R.dims.forEach(d=>{
+      lines.push(`- ${d.dim.name}: ${fmt1(d.avg)}/5 -> Stufe ${d.stage} (${stageInfo(d.stage).name})`);
+      if(d.note) lines.push(`  Notiz: ${d.note}`);
+    });
+    lines.push("");
+    lines.push("TOP-3 PRIORISIERTE HANDLUNGSEMPFEHLUNGEN:");
+    R.top3.forEach((t,i)=>{
+      lines.push(`${i+1}. [${t.dim.name} | Stufe ${t.stage}] ${t.dim.recommendations[t.stage].join(" / ")}`);
+    });
+    if(state.globalNotes){ lines.push(""); lines.push("GLOBALE BEOBACHTUNGEN:"); lines.push(state.globalNotes); }
+  }
+  return lines.join("\n");
+}
+function copySummary(){
+  const text = buildSummaryText();
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>alert("Zusammenfassung wurde in die Zwischenablage kopiert."))
+      .catch(()=>fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); alert("Zusammenfassung wurde in die Zwischenablage kopiert."); }
+  catch(e){ alert("Kopieren nicht möglich. Text:\n\n"+text); }
+  document.body.removeChild(ta);
+}
+
+function resetAll(){
+  if(!confirm("Alle Eingaben zurücksetzen?")) return;
+  DIMENSIONS.forEach(d=>d.questions.forEach(q=>{
+    state.answers[q.id]=1;
+    state.criteria[q.id]=[false,false,false,false];
+  }));
+  state.overridden.clear();
+  state.answered.clear();
+  state.dimNotes = {};
+  state.globalNotes = "";
+  document.getElementById("globalNotes").value = "";
+  renderErhebung();
+  goToStep("angaben");
+}
+
+/* Init */
+renderErhebung();
+</script>
+</body>
+</html>
