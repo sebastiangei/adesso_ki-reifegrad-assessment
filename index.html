@@ -363,6 +363,23 @@
           <input type="text" id="metaBereich" placeholder="z. B. Vertrieb, IT, Produktion">
         </div>
         <div class="field">
+          <label>Branche</label>
+          <input type="text" id="metaBranche" list="brancheOptions" placeholder="z. B. Automotive, Handel, Öffentlicher Sektor">
+          <datalist id="brancheOptions">
+            <option value="Automotive">
+            <option value="Banken & Finanzdienstleistungen">
+            <option value="Versicherungen">
+            <option value="Handel & E-Commerce">
+            <option value="Öffentlicher Sektor">
+            <option value="Gesundheitswesen">
+            <option value="Industrie & Fertigung">
+            <option value="Energie & Versorgung">
+            <option value="Telekommunikation & IT">
+            <option value="Logistik & Transport">
+            <option value="Sonstige">
+          </datalist>
+        </div>
+        <div class="field">
           <label>Consultant</label>
           <input type="text" id="metaConsultant" placeholder="Ihr Name">
         </div>
@@ -772,7 +789,7 @@ const state = {
   overridden:new Set(), // qids, bei denen die Bewertung manuell vom Vorschlag abweicht
   answered:new Set(),
   dimNotes:{},     // dimId -> text
-  meta:{kunde:"",bereich:"",consultant:"",datum:"",kontext:""},
+  meta:{kunde:"",bereich:"",branche:"",consultant:"",datum:"",kontext:""},
   globalNotes:"",
   dimOpen:{},
   agent:{
@@ -1225,9 +1242,9 @@ function updateProgress(){
 }
 
 /* Meta fields binding */
-["metaKunde","metaBereich","metaConsultant","metaDatum","metaKontext"].forEach(id=>{
+["metaKunde","metaBereich","metaBranche","metaConsultant","metaDatum","metaKontext"].forEach(id=>{
   document.getElementById(id).addEventListener("input",(e)=>{
-    const map={metaKunde:"kunde",metaBereich:"bereich",metaConsultant:"consultant",metaDatum:"datum",metaKontext:"kontext"};
+    const map={metaKunde:"kunde",metaBereich:"bereich",metaBranche:"branche",metaConsultant:"consultant",metaDatum:"datum",metaKontext:"kontext"};
     state.meta[map[id]] = e.target.value;
   });
 });
@@ -1259,7 +1276,7 @@ function computeResults(){
 function renderReport(){
   const R = computeResults();
   document.getElementById("reportMetaLine").innerHTML =
-    `<b>${esc(state.meta.kunde)||"Kunde n. a."}</b> · ${esc(state.meta.bereich)||"Fachbereich n. a."} · Consultant: ${esc(state.meta.consultant)||"–"} · ${esc(state.meta.datum)}`;
+    `<b>${esc(state.meta.kunde)||"Kunde n. a."}</b> · ${esc(state.meta.bereich)||"Fachbereich n. a."}${state.meta.branche?" · Branche: "+esc(state.meta.branche):""} · Consultant: ${esc(state.meta.consultant)||"–"} · ${esc(state.meta.datum)}`;
 
   const root = document.getElementById("reportRoot");
   root.innerHTML = renderConsultantView(R) + renderKundeView(R);
@@ -1304,7 +1321,7 @@ async function agentGenerateSummary(viewMode){
 
   const dimLines = R.dims.map(d=>`- ${d.dim.name}: Score ${fmt1(d.avg)}/5, Stufe ${d.stage} (${stageInfo(d.stage).name})${d.note?" — Notiz: "+d.note:""}`).join("\n");
   const top3Lines = R.top3.map((t,i)=>`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0]}`).join("\n");
-  const dataBlock = `Kunde/Bereich: ${state.meta.kunde||"n/a"} / ${state.meta.bereich||"n/a"}\n`+
+  const dataBlock = `Kunde/Bereich: ${state.meta.kunde||"n/a"} / ${state.meta.bereich||"n/a"}${state.meta.branche?" (Branche: "+state.meta.branche+")":""}\n`+
     `Gesamt-Reifegrad: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n\n`+
     `Scores je Dimension:\n${dimLines}\n\nTop-3 Handlungsempfehlungen:\n${top3Lines}`;
 
@@ -1455,7 +1472,7 @@ function renderKundeView(R){
     <div class="card kunde-hero">
       <div class="wordmark-sm">adesso</div>
       <h2>KI-Reifegrad – Ergebnisüberblick</h2>
-      <div class="sub">${esc(state.meta.kunde)||"Kunde"} · ${esc(state.meta.bereich)||""} · ${esc(state.meta.datum)}</div>
+      <div class="sub">${esc(state.meta.kunde)||"Kunde"} · ${esc(state.meta.bereich)||""}${state.meta.branche?" · "+esc(state.meta.branche):""} · ${esc(state.meta.datum)}</div>
       <div class="stage-badge-lg" style="background:${os.hex};color:${os.textColor}">
         <span class="num">${os.level}</span><span class="of">von 5</span>
       </div>
@@ -1541,7 +1558,7 @@ function buildSummaryText(){
   let lines = [];
   if(state.mode==="kunde"){
     lines.push(`KI-REIFEGRAD – ERGEBNISÜBERBLICK`);
-    lines.push(`${state.meta.kunde||"Kunde"} · ${state.meta.bereich||""} · ${state.meta.datum}`);
+    lines.push(`${state.meta.kunde||"Kunde"} · ${state.meta.bereich||""}${state.meta.branche?" · "+state.meta.branche:""} · ${state.meta.datum}`);
     lines.push("");
     lines.push(`Gesamt-Reifegrad: Stufe ${os.level} – ${os.name}`);
     lines.push(os.desc);
@@ -1558,7 +1575,7 @@ function buildSummaryText(){
     lines.push(`Vertraulich – erstellt von adesso für ${state.meta.kunde||"Kunde"} am ${state.meta.datum}.`);
   } else {
     lines.push(`KI-REIFEGRAD-ASSESSMENT (CONSULTANT-ANSICHT)`);
-    lines.push(`Kunde: ${state.meta.kunde||"-"} | Fachbereich: ${state.meta.bereich||"-"} | Consultant: ${state.meta.consultant||"-"} | Datum: ${state.meta.datum}`);
+    lines.push(`Kunde: ${state.meta.kunde||"-"} | Fachbereich: ${state.meta.bereich||"-"}${state.meta.branche?" | Branche: "+state.meta.branche:""} | Consultant: ${state.meta.consultant||"-"} | Datum: ${state.meta.datum}`);
     lines.push("");
     lines.push(`GESAMT-REIFEGRAD: Stufe ${os.level} – ${os.name} (Score ${fmt1(R.overallAvg)}/5)`);
     lines.push(os.desc);
