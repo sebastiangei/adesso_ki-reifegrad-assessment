@@ -26,11 +26,11 @@
     --bg-alt:#E7E5E3;
     --border:#D9D6D2;
     --input-bg:#fcfcfc;
-    --accent-blue-bg:var(--accent-blue-bg);
+    --accent-blue-bg:#EEF6FC;
     --accent-blue-border:#BBD7EE;
-    --accent-purple-bg:var(--accent-purple-bg);
-    --accent-purple-border:var(--accent-purple-border);
-    --accent-teal-bg:var(--accent-teal-bg);
+    --accent-purple-bg:#F3EFFB;
+    --accent-purple-border:#DCD1F5;
+    --accent-teal-bg:#E1F9F1;
     --accent-teal-border:#B5D9C8;
     --caveat-bg:#FFF8E6;
     --caveat-border:#EAD9A0;
@@ -465,7 +465,7 @@
       <div class="mode-toggle theme-switch no-print" id="themeSwitch">
         <button type="button" data-theme="light" title="Hell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="tt-lbl">Hell</span></button>
         <button type="button" data-theme="dark" title="Dunkel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="tt-lbl">Dunkel</span></button>
-        <button type="button" data-theme="system" title="Systemeinstellung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tt-lbl">System</span></button>
+        <button type="button" data-theme="system" title="Automatisch: folgt der Hell-/Dunkel-Einstellung Ihres Geräts (Windows/macOS)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tt-lbl">Auto</span></button>
       </div>
       <button type="button" class="btn-mini no-print" onclick="showIntro()">❓ Anleitung</button>
       <div class="mode-toggle no-print" id="modeToggle">
@@ -617,7 +617,8 @@
     <details class="step-help no-print">
       <summary>❓ Hinweise zu diesem Schritt</summary>
       <ul>
-        <li><b>Kriterien abhaken, was belegbar ist</b> – daraus entsteht automatisch der Stufenvorschlag (erfüllte Kriterien + 1).</li>
+        <li><b>Kriterien abhaken, was belegbar ist</b> – daraus entsteht automatisch der Stufenvorschlag.</li>
+        <li><b>Zur Skala:</b> Stufe 1 ist der Basiswert (trifft ohne Nachweise auf jede Organisation zu), Stufe 5 = voll ausgeprägt. Darum ergeben 4 Kriterien die Stufe 5: kein Kriterium = 1, jedes erfüllte Kriterium hebt um eine Stufe.</li>
         <li>Weicht Ihr Experteneindruck ab: <b>Slider verschieben</b>. „↺ Vorschlag übernehmen“ kehrt zum Kriterienwert zurück.</li>
         <li><b>Beobachtungen als Freitext</b> je Dimension festhalten – sie fließen in den Report ein (Keyword-Analyse, optional Agent). Keine Klarnamen von Mitarbeitenden.</li>
         <li>Eingaben werden <b>automatisch zwischengespeichert</b> – nichts geht bei einem Reload verloren.</li>
@@ -678,7 +679,7 @@
       <div><b>Im adesso-Vorgehen:</b> Etappe 2 („Verstehen“) der vier Etappen der KI-Strategie – Management-Befähigung → <b>KI-Reifegrad</b> → Use Case Backlog → KI Target Operating Model.</div>
     </div>
     <div class="intro-step"><div class="num">1</div><p><b>Angaben:</b> Kunde, Branche und Kontext erfassen. Die Branche steuert regulatorische Hinweise im Report.</p></div>
-    <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch und lässt sich per Slider übersteuern. Beobachtungen als Freitext festhalten.</p></div>
+    <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch (Skala 1–5: Stufe 1 = Basiswert ohne Nachweise, jedes erfüllte Kriterium hebt um eine Stufe) und lässt sich per Slider übersteuern. Beobachtungen als Freitext festhalten.</p></div>
     <div class="intro-step"><div class="num">3</div><p><b>Auswertung:</b> Report mit Gesamt-Reifegrad, Top-3-Maßnahmen, Quellen und rechtlichem Rahmen. Umschaltbar: Consultant-Ansicht (mit Methodik) ↔ Kunden-Ansicht (präsentationsfertig).</p></div>
     <div class="intro-note">💾 Eingaben werden automatisch im Browser zwischengespeichert; „Speichern (JSON)“ sichert bewusst als Datei.<br>⚠️ Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das Unternehmen anpassen.</div>
     <div class="intro-actions"><button type="button" class="btn btn-primary" onclick="closeIntro()">Los geht’s</button></div>
@@ -820,6 +821,7 @@ function legalBoxHtml(stage){
       <span class="stufe-dot">Stufe ${e.stufe}</span>
       <div>${e.item.text} ${srcChipsHtml(e.item.sources)}</div>
     </div>`).join("")}
+    <div class="hint" style="margin-top:10px;">Rechtsstand: Juli 2026 · Angaben ohne Gewähr – Fristen können sich ändern (z. B. Digital-Omnibus-Paket); bei rechtlichen Entscheidungen Rechtsabteilung/Fachbereich einbinden.</div>
   </div>`;
 }
 function brancheBoxHtml(){
@@ -1536,7 +1538,7 @@ function renderErhebung(){
               </div>
               <div class="score-row">
                 Automatischer Vorschlag aus den Kriterien: <b id="suggest-${q.id}">${suggested}</b>/5
-                <span class="score-hint">(Anzahl erfüllter Kriterien&nbsp;+&nbsp;1)</span>
+                <span class="score-hint">(Skala 1–5: kein Kriterium erfüllt = Stufe 1 (Basis) · alle 4 erfüllt = Stufe 5)</span>
               </div>
               <div class="override-row">
                 <span class="override-label">Ihre Bewertung:</span>
@@ -1939,6 +1941,36 @@ function renderConsultantView(R){
     <details class="card accordion-lib">
       <summary>Alle Handlungsempfehlungen je Dimension &amp; Reifestufe anzeigen (Referenz)</summary>
       ${libraryHtml}
+    </details>
+
+    <details class="card accordion-lib">
+      <summary>Über die Datenbasis &amp; Methodik (Transparenz)</summary>
+      <div class="lib-dim">
+        <h5>Wie ist die Datenbasis entstanden?</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Fragen, Kriterien und alle 60 Handlungsempfehlungen wurden auf Basis einer mehrstufigen,
+          quellengeprüften Recherche entwickelt: parallele Multi-Agenten-Recherche über fünf Suchfelder
+          (Change-Frameworks, Adoptionstheorien, KI-Governance-Standards, Reifegradmodelle, Erfolgsfaktoren),
+          anschließend <b>adversarische Verifikation</b> – jede zentrale Aussage wurde von drei unabhängigen
+          Prüfinstanzen gegen die Primärquelle getestet (25 von 25 Kernaussagen bestätigt, 0 widerlegt).
+          Ergänzt um separate Recherchen zu EU-Recht, Mitbestimmung und Branchenspezifika.
+          Bewusst aussortiert wurden empirisch nicht belegte Beratermythen (z. B. die „70&nbsp;%-Scheiterrate"
+          von Change-Projekten – widerlegt durch Hughes 2011).
+        </p>
+      </div>
+      <div class="lib-dim">
+        <h5>Warum diese Frameworks?</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          <b>Kotter &amp; Lewin</b>, weil sie die in der Praxis meistangewandten Change-Modelle sind (systematisches
+          Review: Harrison et al. 2021) – genutzt als flexible Leitprinzipien, nicht als starre Schrittfolgen.
+          <b>TAM, UTAUT, TOE und Rogers' Diffusionstheorie</b>, weil sie die meta-analytisch am besten validierten
+          Modelle für Technologie- und KI-Adoption sind (u. a. Xue et al. 2026; Thanthrige et al. 2025; Pinto et al. 2025).
+          <b>Errida &amp; Lotfi (2021)</b> als Erfolgsfaktoren-Rückgrat (Review über 37 Change-Modelle).
+          <b>NIST AI RMF, ISO/IEC 42001 und OECD AI Principles</b> als offizielle bzw. zertifizierbare
+          Governance-Standards. Die Stufenlogik ist an <b>Gartner (Awareness→Transformational)</b> und CMMI kalibriert.
+          Details und vollständige Quellenliste: <code>docs/methodik-fundament.md</code> im Repository.
+        </p>
+      </div>
     </details>
 
     ${state.globalNotes ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:20px;"><b style="font-size:12.5px;color:var(--ink-soft);">Globale Beobachtungen:</b><p style="font-size:13px;margin:6px 0 0;">${esc(state.globalNotes)}</p></div>` : ""}
