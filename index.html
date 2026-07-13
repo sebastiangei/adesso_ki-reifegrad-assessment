@@ -25,6 +25,19 @@
     --bg:#F8F7F6;
     --bg-alt:#E7E5E3;
     --border:#D9D6D2;
+    --input-bg:#fcfcfc;
+    --accent-blue-bg:var(--accent-blue-bg);
+    --accent-blue-border:#BBD7EE;
+    --accent-purple-bg:var(--accent-purple-bg);
+    --accent-purple-border:var(--accent-purple-border);
+    --accent-teal-bg:var(--accent-teal-bg);
+    --accent-teal-border:#B5D9C8;
+    --caveat-bg:#FFF8E6;
+    --caveat-border:#EAD9A0;
+    --caveat-ink:#6B5A1E;
+    --engpass-bg:#FCEDE8;
+    --engpass-border:#E8C0B0;
+    --engpass-ink:#8A3B22;
     --stage1:#86807A;
     --stage2:#2B7FC4;
     --stage3:#28DCAA;
@@ -33,6 +46,36 @@
     --shadow: 0 2px 14px rgba(0,0,0,.07);
     --shadow-soft: 0 1px 4px rgba(0,0,0,.06);
     --radius: 10px;
+  }
+  /* ---------- Dunkelmodus (Umschalter im Header, folgt initial der Systemeinstellung) ---------- */
+  body.theme-dark{
+    --brand-primary:#3E9BE3;
+    --brand-primary-dark:#2F7FBF;
+    --brand-purple:#7C5CE0;
+    --teal-dark:#5FD3B0;
+    --purple-dark:#B9A5F0;
+    --ink:#ECEAE7;
+    --ink-soft:#B8B2AA;
+    --ink-faint:#8A857D;
+    --paper:#232120;
+    --bg:#1A1918;
+    --bg-alt:#2E2C2A;
+    --border:#413D39;
+    --input-bg:#1E1D1C;
+    --accent-blue-bg:#1E2C38;
+    --accent-blue-border:#2E4A63;
+    --accent-purple-bg:#2A2338;
+    --accent-purple-border:#463A63;
+    --accent-teal-bg:#1C312A;
+    --accent-teal-border:#2E5548;
+    --caveat-bg:#332B14;
+    --caveat-border:#5C4E22;
+    --caveat-ink:#E3CF8F;
+    --engpass-bg:#3A2119;
+    --engpass-border:#6B3A28;
+    --engpass-ink:#F0A98E;
+    --shadow: 0 2px 14px rgba(0,0,0,.4);
+    --shadow-soft: 0 1px 4px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -51,10 +94,14 @@
     padding:22px 0 18px;border-bottom:3px solid var(--brand-primary);
     flex-wrap:wrap;gap:14px;
   }
-  .brand{display:flex;align-items:baseline;gap:14px;}
-  .brand .wordmark{
-    font-weight:800;font-size:28px;letter-spacing:-0.5px;color:var(--brand-primary);
-  }
+  .brand{display:flex;align-items:center;gap:14px;}
+  .adesso-logo{height:40px;width:auto;display:block;flex-shrink:0;}
+  .adesso-logo .lg-word{fill:#006EC7;}
+  .adesso-logo .lg-swoosh{fill:#857E72;}
+  body.theme-dark .adesso-logo .lg-word{fill:#FFFFFF;}
+  /* Theme-Umschalter (Segment-Control, portiert aus adnetwork) */
+  .theme-switch button{display:inline-flex;align-items:center;gap:5px;padding:7px 11px;font-size:12px;}
+  .theme-switch svg{width:14px;height:14px;flex-shrink:0;}
   .brand .title{font-size:16px;color:var(--ink-soft);font-weight:600;border-left:1px solid var(--border);padding-left:14px;}
   .mode-toggle{display:flex;background:var(--bg-alt);border-radius:999px;padding:4px;gap:2px;}
   .mode-toggle button{
@@ -72,7 +119,7 @@
     cursor:pointer;transition:.15s;
   }
   .stepper .step:hover{border-color:var(--brand-primary);}
-  .stepper .step.active{border-color:var(--brand-primary);background:#EEF6FC;box-shadow:var(--shadow-soft);}
+  .stepper .step.active{border-color:var(--brand-primary);background:var(--accent-blue-bg);box-shadow:var(--shadow-soft);}
   .stepper .step .num{
     width:26px;height:26px;border-radius:50%;background:var(--bg-alt);color:var(--ink-soft);
     display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;
@@ -95,10 +142,10 @@
   .field label{font-size:13px;font-weight:700;color:var(--ink-soft);}
   .field input[type=text], .field input[type=date], .field input[type=password], .field select, .field textarea{
     border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:14px;font-family:inherit;
-    background:#fcfcfc;
+    background:var(--input-bg);
   }
   .field textarea{resize:vertical;min-height:70px;}
-  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--brand-primary);outline-offset:1px;background:#fff;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:2px solid var(--brand-primary);outline-offset:1px;background:var(--paper);}
   .hint{font-size:12.5px;color:var(--ink-faint);}
 
   /* ---------- Agent-Funktionen ---------- */
@@ -116,19 +163,19 @@
     font-size:12px;font-weight:800;color:#fff;background:var(--brand-purple);padding:6px 12px;border-radius:999px;
   }
   .btn-agent{
-    border:1px solid var(--brand-purple);background:#fff;color:var(--brand-purple);font-size:12px;font-weight:700;
+    border:1px solid var(--brand-purple);background:var(--paper);color:var(--brand-purple);font-size:12px;font-weight:700;
     padding:7px 13px;border-radius:6px;cursor:pointer;white-space:nowrap;
   }
-  .btn-agent:hover{background:#F3EFFB;}
+  .btn-agent:hover{background:var(--accent-purple-bg);}
   .btn-agent:disabled{opacity:.5;cursor:not-allowed;}
   .agent-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:10px 0;}
   .agent-evidence{margin-left:24px;font-size:11px;color:var(--purple-dark);font-style:italic;margin-top:2px;}
   .agent-copilot-box{
-    margin-top:12px;padding:12px 14px;background:#F3EFFB;border:1px solid #DCD1F5;border-radius:8px;font-size:13px;color:var(--ink);
+    margin-top:12px;padding:12px 14px;background:var(--accent-purple-bg);border:1px solid var(--accent-purple-border);border-radius:8px;font-size:13px;color:var(--ink);
   }
   .agent-copilot-box b{color:var(--brand-purple);}
   .agent-summary-box{
-    margin:0 0 20px;padding:20px 22px;background:#F3EFFB;border:1px solid #DCD1F5;border-radius:10px;
+    margin:0 0 20px;padding:20px 22px;background:var(--accent-purple-bg);border:1px solid var(--accent-purple-border);border-radius:10px;
   }
   .agent-summary-box .agent-tag{font-size:11px;font-weight:800;color:#fff;background:var(--brand-purple);padding:3px 9px;border-radius:999px;margin-bottom:10px;display:inline-block;}
   .agent-summary-box p{margin:0;font-size:14px;line-height:1.6;color:var(--ink);}
@@ -189,14 +236,14 @@
   .override-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
   .override-row input[type=range]{flex:1;accent-color:var(--brand-primary);height:6px;}
   .btn-sync{
-    border:1px solid var(--border);background:#fff;color:var(--brand-primary);font-size:11px;font-weight:700;
+    border:1px solid var(--border);background:var(--paper);color:var(--brand-primary);font-size:11px;font-weight:700;
     padding:5px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;
   }
   .btn-sync:hover{background:var(--bg-alt);}
 
   .freitext-block{margin-top:8px;padding-top:14px;border-top:1px solid var(--border);}
   .freitext-block label{font-size:13px;font-weight:700;color:var(--ink-soft);display:block;margin-bottom:6px;}
-  .freitext-block textarea{width:100%;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:13.5px;font-family:inherit;min-height:64px;background:#fcfcfc;}
+  .freitext-block textarea{width:100%;border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:13.5px;font-family:inherit;min-height:64px;background:var(--input-bg);}
 
   .global-notes{padding:20px;margin-top:8px;}
 
@@ -208,7 +255,7 @@
   .btn-primary{background:var(--brand-primary);color:#fff;}
   .btn-primary:hover{background:var(--brand-primary-dark);}
   .btn-secondary{background:var(--bg-alt);color:var(--ink);}
-  .btn-secondary:hover{background:#ddd;}
+  .btn-secondary:hover{background:var(--border);}
   .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--border);}
   .btn-ghost:hover{border-color:var(--brand-primary);color:var(--brand-primary);}
   .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
@@ -220,7 +267,7 @@
 
   .overall-banner{
     display:flex;align-items:center;gap:26px;padding:26px 30px;margin-bottom:20px;
-    background:linear-gradient(135deg,#fff,#EAF3FB);
+    background:linear-gradient(135deg,var(--paper),var(--accent-blue-bg));
   }
   .stage-badge-lg{
     width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -261,7 +308,7 @@
   .dim-notes{margin-top:10px;font-size:12.5px;color:var(--ink-soft);background:var(--bg-alt);padding:8px 10px;border-radius:6px;}
   .tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
   .tag{font-size:10.5px;padding:3px 8px;border-radius:999px;font-weight:700;}
-  .tag.pos{background:#E1F9F1;color:var(--teal-dark);}
+  .tag.pos{background:var(--accent-teal-bg);color:var(--teal-dark);}
   .tag.risk{background:#EFE9FB;color:var(--purple-dark);}
   .qbreak{margin-top:10px;font-size:12px;color:var(--ink-faint);}
 
@@ -277,7 +324,7 @@
   /* Kunde view specifics */
   .kunde-hero{
     text-align:center;padding:40px 30px 34px;margin-bottom:22px;
-    background:linear-gradient(135deg,#fff,#EAF3FB);
+    background:linear-gradient(135deg,var(--paper),var(--accent-blue-bg));
   }
   .kunde-hero .wordmark-sm{color:var(--brand-primary);font-weight:800;font-size:14px;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;}
   .kunde-hero h2{font-size:24px;margin:6px 0 4px;}
@@ -312,15 +359,93 @@
 
   footer.appfoot{text-align:center;color:var(--ink-faint);font-size:12px;padding:30px 0 10px;}
 
+  /* ---------- Kurzanleitung (Overlay + Schritt-Hilfen) ---------- */
+  .intro-overlay{position:fixed;inset:0;background:rgba(38,36,34,.55);display:none;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .intro-overlay.open{display:flex;}
+  .intro-card{background:var(--paper);border-radius:12px;max-width:620px;width:100%;padding:28px 30px;box-shadow:var(--shadow);max-height:90vh;overflow:auto;}
+  .intro-card h2{margin:0 0 4px;font-size:20px;}
+  .intro-card .intro-sub{margin:0 0 14px;font-size:13.5px;color:var(--ink-soft);}
+  .intro-meta{display:flex;flex-direction:column;gap:8px;margin:0 0 18px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
+  .intro-meta div{font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
+  .intro-meta b{color:var(--ink);}
+  .intro-step{display:flex;gap:12px;margin:12px 0;align-items:flex-start;}
+  .intro-step .num{
+    width:26px;height:26px;border-radius:50%;background:var(--brand-primary);color:#fff;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+  }
+  .intro-step p{margin:2px 0 0;font-size:13.5px;color:var(--ink);}
+  .intro-note{font-size:12.5px;color:var(--ink-soft);background:var(--bg-alt);border-radius:8px;padding:10px 12px;margin-top:14px;}
+  .intro-actions{display:flex;justify-content:flex-end;margin-top:18px;}
+  .step-help{margin:0 0 16px;font-size:13px;color:var(--ink-soft);background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;}
+  .step-help summary{cursor:pointer;font-weight:700;font-size:13px;color:var(--brand-primary);user-select:none;}
+  .step-help ul{margin:8px 0 4px;padding-left:18px;}
+  .step-help li{margin:4px 0;line-height:1.5;}
+
+  /* ---------- Persistenz-Leiste ---------- */
+  .persist-bar{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;flex-wrap:wrap;}
+  .btn-mini{
+    border:1px solid var(--border);background:var(--paper);color:var(--ink-soft);
+    font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .btn-mini:hover{border-color:var(--brand-primary);color:var(--brand-primary);}
+  .autosave-info{font-size:11.5px;color:var(--ink-faint);margin-left:auto;}
+
+  /* ---------- Quellen-Chips, Rechts-/Branchen-/Caveat-Boxen ---------- */
+  .src-row{display:inline-flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .src-chip{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:700;cursor:help;border:1px solid var(--border);color:var(--ink-soft);background:var(--bg);white-space:nowrap;}
+  .src-chip.recht{border-color:var(--accent-purple-border);background:var(--accent-purple-bg);color:var(--purple-dark);}
+  .src-chip.standard{border-color:var(--accent-teal-border);background:var(--accent-teal-bg);color:var(--teal-dark);}
+  .src-chip.studie{border-color:var(--accent-blue-border);background:var(--accent-blue-bg);color:var(--brand-primary-dark);}
+  .src-chip.analyst{border-color:var(--border);background:var(--bg-alt);color:var(--ink-soft);}
+  .src-chip.adesso{border-color:var(--brand-primary);background:var(--accent-blue-bg);color:var(--brand-primary);}
+  .tom-tag{font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-top:2px;}
+  .engpass-box{
+    background:var(--engpass-bg);border:1px solid var(--engpass-border);border-radius:var(--radius);
+    padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--engpass-ink);
+  }
+  .etappe-box{padding:18px 20px;margin-bottom:20px;}
+  .etappe-box h3{margin:0 0 8px;font-size:15px;}
+  .etappe-box p{margin:0 0 10px;font-size:13px;color:var(--ink-soft);}
+  .etappen-track{font-size:12.5px;color:var(--ink-faint);background:var(--bg-alt);border-radius:8px;padding:9px 12px;}
+  .etappen-track b{color:var(--brand-primary);}
+  .rec-begruendung{font-size:12px;color:var(--ink-faint);margin:4px 0 0;font-style:italic;}
+  .rec-transition{font-size:12px;color:var(--purple-dark);background:var(--accent-purple-bg);border-radius:6px;padding:6px 9px;margin-top:6px;}
+  .caveat-box{background:#FFF8E6;border:1px solid #EAD9A0;border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;font-size:13px;color:#6B5A1E;}
+  .legal-box{padding:18px 20px;margin-bottom:20px;}
+  .legal-box h3{margin:0 0 10px;font-size:15px;}
+  .legal-item{display:flex;gap:9px;padding:8px 0;border-top:1px dashed var(--border);font-size:13px;color:var(--ink-soft);}
+  .legal-item .stufe-dot{flex-shrink:0;font-size:10.5px;font-weight:800;background:var(--bg-alt);border-radius:999px;padding:2px 8px;color:var(--ink-soft);height:fit-content;white-space:nowrap;}
+  .branche-box{padding:16px 20px;margin-bottom:20px;border-left:4px solid var(--brand-primary);}
+  .branche-box h4{margin:0 0 6px;font-size:14px;}
+  .branche-box p{margin:3px 0;font-size:13px;color:var(--ink-soft);}
+  .reg-badge{font-size:10.5px;font-weight:800;padding:2px 9px;border-radius:999px;margin-left:8px;}
+  .reg-hoch{background:var(--accent-purple-bg);color:var(--purple-dark);}
+  .reg-mittel{background:var(--accent-blue-bg);color:var(--brand-primary-dark);}
+  .reg-niedrig{background:var(--accent-teal-bg);color:var(--teal-dark);}
+
   @media (max-width:820px){
     .meta-grid, .grid-2, .dim-results-grid, .kunde-strength-grid, .kunde-potential-grid{grid-template-columns:1fr;}
     .anchor{width:110px;font-size:10.5px;}
     .stepper .lbl{display:none;}
+    .theme-switch .tt-lbl{display:none;}
   }
 
   @media print{
     header.topbar .mode-toggle, .stepper, .nav-actions, .report-toolbar .btn-row, #btnStartOver, .no-print{display:none !important;}
+    /* Druck immer im hellen Design – auch wenn Dunkelmodus aktiv ist */
+    body.theme-dark{
+      --brand-primary:#006EC7;--brand-primary-dark:#00568F;--brand-purple:#461EBE;
+      --teal-dark:#146B52;--purple-dark:#341769;
+      --ink:#262422;--ink-soft:#55524C;--ink-faint:#8A857D;
+      --paper:#FFFFFF;--bg:#FFFFFF;--bg-alt:#E7E5E3;--border:#D9D6D2;--input-bg:#fcfcfc;
+      --accent-blue-bg:#EEF6FC;--accent-blue-border:#BBD7EE;
+      --accent-purple-bg:#F3EFFB;--accent-purple-border:#DCD1F5;
+      --accent-teal-bg:#E1F9F1;--accent-teal-border:#B5D9C8;
+      --caveat-bg:#FFF8E6;--caveat-border:#EAD9A0;--caveat-ink:#6B5A1E;
+      --engpass-bg:#FCEDE8;--engpass-border:#E8C0B0;--engpass-ink:#8A3B22;
+    }
     body{background:#fff;}
+    .adesso-logo .lg-word{fill:#006EC7 !important;}
     .panel{display:block !important;}
     #panel-angaben, #panel-erhebung{display:none !important;}
     .card{box-shadow:none;border:1px solid #ccc;}
@@ -332,11 +457,17 @@
 
   <header class="topbar">
     <div class="brand">
-      <span class="wordmark">adesso</span>
+      <svg class="adesso-logo" viewBox="0 0 146.8346 58.3937" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="adesso"><path class="lg-word" d="M26.8218,20.5164a22.0835,22.0835,0,0,0-5.8081.8l.521,3.2343A23.6564,23.6564,0,0,1,26.23,24.029c2.7134,0,3.2353.4737,3.2353,2.3526v.87H25.1929c-3.4434,0-4.7354,2.4121-4.7354,5.8545,0,2.9228,1.32,5.0439,4.4165,5.0439a9.2611,9.2611,0,0,0,5.043-1.4961l.3418,1.2754H33.708V26.6374C33.708,22.3943,32.1426,20.5164,26.8218,20.5164Zm2.6435,13.39a7.8689,7.8689,0,0,1-3.332,1.15c-1.8359.0674-1.7944-1.7149-1.7944-2.8975,0-1.2861.6045-1.6894,1.9956-1.6894h3.1308Zm17.816-12.8926a23.5514,23.5514,0,0,0-4.5694-.4922c-3.97,0-5.6572,2.0605-5.6572,5.8554v5.835c0,3.9,1.8271,5.9385,5.2705,5.9385a9.0085,9.0085,0,0,0,5.4136-1.793l.46,1.5723h3.37v-24.46l-4.2871.5977Zm0,11.9355A6.0628,6.0628,0,0,1,43.45,34.4958c-1.5811,0-2.1084-.7735-2.1084-2.18V26.2712c0-1.5459.5972-2.0957,2.144-2.0957a19.0043,19.0043,0,0,1,3.7955.457Zm60.6943-12.4348c-5.8086,0-7.3731,3.2-7.3731,6.6787v4.2784c0,3.4794,1.5645,6.68,7.3731,6.68,5.8105,0,7.376-3.2,7.376-6.68V27.1928C115.3516,23.7143,113.7861,20.5141,107.9756,20.5141ZM111.1084,31.61c0,1.9141-.8711,2.9239-3.1328,2.9239-2.2588,0-3.1289-1.01-3.1289-2.9239V27.0532c0-1.9131.87-2.9219,3.1289-2.9219,2.2617,0,3.1328,1.0088,3.1328,2.9219ZM77.8242,27.4843c-2.3144-.4824-2.4228-.581-2.4873-1.9326-.0488-1.04.2422-1.4707,2.0791-1.5566a29.8038,29.8038,0,0,1,4.669.2656l.2558-3.3818a22.2487,22.2487,0,0,0-5.0879-.3506c-4.8164.2275-6.2383,1.7881-6.0781,5.1855.1543,3.2578.6875,4.2754,4.86,5.085,2.7685.5293,3.0009,1.0391,3.0517,2.08.0606,1.2832-.1973,1.7119-2.07,1.8008a18.9013,18.9013,0,0,1-5.0586-.4913l-.4385,3.251a19.874,19.874,0,0,0,5.8682.6963c5.0967-.2412,6.0078-2.2978,5.8535-5.5566C83.0771,29.1123,82.5967,28.51,77.8242,27.4843Zm14.8194,0c-2.3145-.4814-2.4239-.58-2.4883-1.9316-.0489-1.04.2441-1.4717,2.08-1.5576a29.776,29.776,0,0,1,4.6679.2656l.2578-3.3808a22.2081,22.2081,0,0,0-5.0879-.3516c-4.8183.2275-6.2382,1.7891-6.0781,5.1855.1543,3.2578.6875,4.2754,4.8594,5.086,2.7685.5293,3.0019,1.039,3.0508,2.0791.0605,1.2832-.1973,1.7129-2.0684,1.8008a18.9194,18.9194,0,0,1-5.0605-.4913l-.4375,3.251a19.9137,19.9137,0,0,0,5.8691.6973c5.0947-.2422,6.0059-2.2988,5.8525-5.5567C97.8955,29.1132,97.417,28.5107,92.6436,27.4843Zm-30.7-6.9775c-5.4282,0-7.0283,3.0273-7.0283,6.6113v4.4893c0,4.0713,1.8443,6.541,7.167,6.541a14.7822,14.7822,0,0,0,5.6187-.918l.45-3.1757a15.3126,15.3126,0,0,1-5.6265.791c-2.5615-.2559-3.3643-.9766-3.3643-3.0293v-.87h9.4283V27.3271C68.5889,23.6728,67.3711,20.5068,61.9438,20.5068Zm2.6094,7.0293H59.1606v-.835c0-1.6015.73-2.7148,2.8184-2.7148s2.5742,1.1133,2.5742,2.7148Z"/><polygon class="lg-swoosh" points="126.435 11.012 124.852 11.012 124.852 40.397 114.677 50.573 116.915 50.573 126.435 41.052 126.435 11.012"/></svg>
       <span class="title">KI-Reifegrad-Assessment für Change-Projekte</span>
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
       <span id="agentBadge" class="agent-badge-header" style="display:none;">🤖 Agent aktiv</span>
+      <div class="mode-toggle theme-switch no-print" id="themeSwitch">
+        <button type="button" data-theme="light" title="Hell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="tt-lbl">Hell</span></button>
+        <button type="button" data-theme="dark" title="Dunkel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="tt-lbl">Dunkel</span></button>
+        <button type="button" data-theme="system" title="Systemeinstellung"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span class="tt-lbl">System</span></button>
+      </div>
+      <button type="button" class="btn-mini no-print" onclick="showIntro()">❓ Anleitung</button>
       <div class="mode-toggle no-print" id="modeToggle">
         <button data-mode="consultant" class="active">Consultant-Ansicht</button>
         <button data-mode="kunde">Kunden-Ansicht</button>
@@ -350,8 +481,23 @@
     <div class="step" data-step="auswertung"><div class="num">3</div><div class="lbl">Auswertung &amp; Report</div></div>
   </nav>
 
+  <div class="persist-bar no-print">
+    <button type="button" class="btn-mini" onclick="exportJson()">💾 Speichern (JSON)</button>
+    <button type="button" class="btn-mini" onclick="importJson()">📂 Laden</button>
+    <button type="button" class="btn-mini" onclick="clearLocalData()">🗑️ Lokale Daten löschen</button>
+    <span class="autosave-info" id="autosaveInfo"></span>
+  </div>
+
   <!-- ================= STEP 1: ANGABEN ================= -->
   <section class="panel active" id="panel-angaben">
+    <details class="step-help no-print">
+      <summary>❓ Hinweise zu diesem Schritt</summary>
+      <ul>
+        <li>Kein Feld ist Pflicht – aber die <b>Branche</b> aktiviert später regulatorische Hinweise im Report (z. B. EU-AI-Act-Einstufung).</li>
+        <li>Der <b>Projektkontext</b> bleibt intern und erscheint nur in der Consultant-Ansicht.</li>
+        <li>Die <b>Agent-Funktionen sind optional</b> – ohne Verbindung arbeitet das Tool vollständig offline und regelbasiert.</li>
+      </ul>
+    </details>
     <div class="card">
       <div class="meta-grid">
         <div class="field">
@@ -457,6 +603,7 @@
         <span id="agentTestStatus" class="agent-status"></span>
       </div>
       <p class="agent-warning">Keys/Tokens werden ausschließlich im Arbeitsspeicher dieser Browser-Sitzung gehalten, nicht gespeichert und nur direkt an die jeweilige API übertragen. Nicht auf fremden Rechnern verwenden und beim Screensharing im Workshop nicht die Entwicklertools öffnen. Zugang mit Ausgabenlimit/eingeschränkten Rechten empfohlen.</p>
+      <p class="agent-warning"><b>Datenschutz:</b> Bei aktiviertem Agenten werden Kundenname, Branche und Freitext-Notizen an den gewählten API-Endpunkt übertragen. Für Assessments mit echten Kundendaten nur intern freigegebene Endpunkte verwenden – und in Notizen keine Klarnamen von Mitarbeitenden erfassen (Rollen statt Namen).</p>
     </div>
 
     <div class="nav-actions">
@@ -467,6 +614,15 @@
 
   <!-- ================= STEP 2: ERHEBUNG ================= -->
   <section class="panel" id="panel-erhebung">
+    <details class="step-help no-print">
+      <summary>❓ Hinweise zu diesem Schritt</summary>
+      <ul>
+        <li><b>Kriterien abhaken, was belegbar ist</b> – daraus entsteht automatisch der Stufenvorschlag (erfüllte Kriterien + 1).</li>
+        <li>Weicht Ihr Experteneindruck ab: <b>Slider verschieben</b>. „↺ Vorschlag übernehmen“ kehrt zum Kriterienwert zurück.</li>
+        <li><b>Beobachtungen als Freitext</b> je Dimension festhalten – sie fließen in den Report ein (Keyword-Analyse, optional Agent). Keine Klarnamen von Mitarbeitenden.</li>
+        <li>Eingaben werden <b>automatisch zwischengespeichert</b> – nichts geht bei einem Reload verloren.</li>
+      </ul>
+    </details>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText">0 / 24 Fragen beantwortet</div>
@@ -476,6 +632,7 @@
       <div class="field">
         <label>Globale Beobachtungen (optional)</label>
         <textarea id="globalNotes" placeholder="Übergreifende Eindrücke aus Interviews/Workshops, die sich nicht klar einer Dimension zuordnen lassen ..."></textarea>
+        <span class="hint">Datenhygiene: keine Klarnamen von Mitarbeitenden notieren – Rollen verwenden (z. B. „Teamleiterin Vertrieb“).</span>
       </div>
     </div>
     <div class="nav-actions">
@@ -486,6 +643,15 @@
 
   <!-- ================= STEP 3: AUSWERTUNG ================= -->
   <section class="panel" id="panel-auswertung">
+    <details class="step-help no-print">
+      <summary>❓ Hinweise zu diesem Schritt</summary>
+      <ul>
+        <li><b>Consultant-Ansicht</b> = interne Sicht mit Begründungen, Quellen (über die farbigen Chips), rechtlichem Rahmen und Übergangs-Hinweisen je Dimension.</li>
+        <li><b>Kunden-Ansicht</b> (oben rechts umschalten) = reduzierte, präsentierbare Sicht ohne Methodik.</li>
+        <li><b>„Text kopieren“</b> für Mail/Protokoll, <b>„Drucken / PDF“</b> für die Abgabe – gedruckt wird die gerade aktive Ansicht.</li>
+        <li>Alle Empfehlungen sind <b>Ausgangspunkte</b>: kritisch prüfen und an die Situation des Unternehmens anpassen.</li>
+      </ul>
+    </details>
     <div class="report-toolbar">
       <div class="report-meta" id="reportMetaLine"></div>
       <div class="btn-row no-print">
@@ -498,6 +664,25 @@
   </section>
 
   <footer class="appfoot no-print">adesso KI-Reifegrad-Assessment · vollständig lokal im Browser, keine Datenübertragung</footer>
+</div>
+
+<!-- ================= KURZANLEITUNG (Overlay) ================= -->
+<div class="intro-overlay no-print" id="introOverlay">
+  <div class="intro-card">
+    <h2>So funktioniert das Assessment</h2>
+    <p class="intro-sub">Strukturiert die KI-Reife eines Unternehmens erheben – und daraus fundierte nächste Schritte ableiten.</p>
+    <div class="intro-meta">
+      <div><b>Wozu?</b> Standortbestimmung der KI-Reife über 6 Dimensionen und 5 Stufen – als belastbare Grundlage für Change-Vorhaben rund um KI-Einführung.</div>
+      <div><b>Für wen?</b> Change Manager:innen und Consultants, die KI-Einführungen begleiten – im Kundenworkshop, im Interview oder in der Nachbereitung.</div>
+      <div><b>Was es besonders macht:</b> Bewertet wird über belegbare Kriterien statt Bauchgefühl – und jede Handlungsempfehlung ist wissenschaftlich zitiert (Meta-Analysen, NIST, Gartner), rechtlich verankert (EU AI Act, BetrVG) und an die Branche angepasst. Vollständig lokal im Browser, keine Datenübertragung.</div>
+      <div><b>Im adesso-Vorgehen:</b> Etappe 2 („Verstehen“) der vier Etappen der KI-Strategie – Management-Befähigung → <b>KI-Reifegrad</b> → Use Case Backlog → KI Target Operating Model.</div>
+    </div>
+    <div class="intro-step"><div class="num">1</div><p><b>Angaben:</b> Kunde, Branche und Kontext erfassen. Die Branche steuert regulatorische Hinweise im Report.</p></div>
+    <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch und lässt sich per Slider übersteuern. Beobachtungen als Freitext festhalten.</p></div>
+    <div class="intro-step"><div class="num">3</div><p><b>Auswertung:</b> Report mit Gesamt-Reifegrad, Top-3-Maßnahmen, Quellen und rechtlichem Rahmen. Umschaltbar: Consultant-Ansicht (mit Methodik) ↔ Kunden-Ansicht (präsentationsfertig).</p></div>
+    <div class="intro-note">💾 Eingaben werden automatisch im Browser zwischengespeichert; „Speichern (JSON)“ sichert bewusst als Datei.<br>⚠️ Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das Unternehmen anpassen.</div>
+    <div class="intro-actions"><button type="button" class="btn btn-primary" onclick="closeIntro()">Los geht’s</button></div>
+  </div>
 </div>
 
 <script>
@@ -518,6 +703,137 @@ const STAGES = [
    desc:"KI ist integraler Bestandteil von Strategie und Kultur. Die Organisation lernt kontinuierlich weiter und entwickelt eigene Innovationen und Geschäftsmodelle."}
 ];
 
+/* =========================================================================
+   QUELLENREGISTER, RECHTS-LAYER, BRANCHENPROFILE
+   Fundierung: docs/methodik-fundament.md + docs/recht-branchen-kalibrierung.md
+   ========================================================================= */
+const SOURCES = {
+  /* Studien & Meta-Analysen */
+  "toe-meta":      {label:"TOE-Meta-Analyse (Pinto et al. 2025)", type:"studie",
+                    ref:"DOI 10.1007/s44163-025-00747-2 – 12 Studien, 3.398 Befragte: organisationale Readiness & Management-Support signifikante Adoptionstreiber; Komplexität nicht signifikant."},
+  "utaut-ttf":     {label:"UTAUT+TTF-Meta-Analyse (Thanthrige et al. 2025)", type:"studie",
+                    ref:"JMIR 27:e64524 – 50 Studien: Performance Expectancy stärkster Nutzungstreiber (β=0.304), vor Effort Expectancy, Social Influence, Facilitating Conditions."},
+  "tam-meta":      {label:"TAM-Meta-Analyse (Xue et al. 2026)", type:"studie",
+                    ref:"SAGE Open, 27 Studien, >12.000 TN: Einstellung (r=.72) und wahrgenommener Nutzen (r=.69) dominieren die KI-Adoptionsabsicht."},
+  "ai-mindset":    {label:"AI-Mindset-Growth-Studie (N=1.007)", type:"studie",
+                    ref:"PMC11780378 – Wachstums-Mindset zweitstärkster Prädiktor positiver KI-Einstellung (β=0.28), nach wahrgenommenem Nutzen (β=0.34)."},
+  "rogers-cluster":{label:"Rogers-Adoptertypen empirisch (2025)", type:"studie",
+                    ref:"PMC11780378, Clusteranalyse – Early Adopters ~22 %, Early Majority 33 %, Late Majority 29 %, Laggards 16 %; gezielte Ansprache je Typ."},
+  "errida-lotfi":  {label:"Erfolgsfaktoren-Review (Errida & Lotfi 2021)", type:"studie",
+                    ref:"DOI 10.1177/18479790211016273 – 37 Change-Modelle, 12 Faktorkategorien (u. a. Vision, Führung, Kommunikation, Beteiligung, Kompetenzen)."},
+  "harrison2021":  {label:"Systematisches Review Change-Modelle (Harrison et al. 2021)", type:"studie",
+                    ref:"DOI 10.2147/JHL.S289176 – Kotter/Lewin meistgenutzt; wirken als flexible Leitprinzipien, nicht als starre Schrittfolgen."},
+  "kotter-kritik": {label:"Kotter-Analyse: Umsetzungs- & Messlücke", type:"studie",
+                    ref:"ResearchGate 318481875 – Kotter fehlen Umsetzungswerkzeuge und Wirkungsmessung; genau hier setzen KPIs und dokumentierte Workflows an."},
+  "hughes-70":     {label:"„70 %-Scheiterrate“ widerlegt (Hughes 2011)", type:"studie",
+                    ref:"J. Change Management 11(4):451–464 – die populäre 70 %-Zahl ist empirisch nicht belegt; nicht als Dringlichkeitsargument verwenden."},
+  "sadiq2021":     {label:"SLR KI-Reifegradmodelle (Sadiq et al. 2021)", type:"studie",
+                    ref:"DOI 10.7717/peerj-cs.661 – 15 Modelle; kritische Faktoren: Data, Analytics, Technology, Governance, People."},
+  "bcg-mit":       {label:"BCG/MIT Sloan Studienreihe", type:"analyst",
+                    ref:"„Winning With AI“ (2019, 2.555 Befragte): signifikante Vorteile entstehen erst, wenn Organisationen MIT KI lernen – nicht durch bloßes Ausrollen."},
+  /* Reifegradmodelle */
+  "gartner-aim":   {label:"Gartner AI Maturity Model", type:"analyst",
+                    ref:"5 Stufen Awareness→Transformational; Übergang Stufe 2→3 („Pilot-Falle“) gilt als häufigster Fehlerpunkt."},
+  "deloitte-aim":  {label:"Deloitte State of AI in the Enterprise", type:"analyst",
+                    ref:"2026er-Ausgabe (3.235 Führungskräfte, 24 Länder): Talent-Readiness nur ~20 % – Kompetenzaufbau als zentraler Engpass."},
+  /* Standards & Recht */
+  "nist-rmf":      {label:"NIST AI RMF 1.0", type:"standard",
+                    ref:"NIST AI 100-1 (2023) – Funktionen GOVERN/MAP/MEASURE/MANAGE; GOVERN verlangt Risikomanagement-Kultur und strategische Verankerung."},
+  "oecd-ai":       {label:"OECD AI Principles", type:"standard",
+                    ref:"Erste zwischenstaatliche KI-Norm (2019, aktualisiert 2024) – werteseitige Leitplanken für Zielbild und Kultur."},
+  "iso-42001":     {label:"ISO/IEC 42001:2023", type:"standard",
+                    ref:"Erste zertifizierbare KI-Managementsystem-Norm; 10 Klauseln + 38 Controls (Annex A)."},
+  "ai-act-art4":   {label:"EU AI Act Art. 4 – KI-Kompetenz", type:"recht",
+                    ref:"VO (EU) 2024/1689 – Pflicht zu ausreichender KI-Kompetenz des Personals; gilt seit 02.02.2025 für ALLE Risikoklassen."},
+  "ai-act-risiko": {label:"EU AI Act – Risikoklassen (Art. 5/6, Annex III)", type:"recht",
+                    ref:"Verbotene Praktiken; Hochrisiko u. a. Kreditscoring, LV/KV-Tarifierung, Beschäftigung; Transparenz- und Minimalrisiko."},
+  "ai-act-art26":  {label:"EU AI Act Art. 26 – Betreiberpflichten", type:"recht",
+                    ref:"Bestimmungsgemäße Nutzung, menschliche Aufsicht, Logs ≥ 6 Monate; Abs. 7: Beschäftigte & Arbeitnehmervertretung VOR Einsatz informieren."},
+  "dsgvo-ki":      {label:"DSGVO Art. 22 & 35 (DSFA)", type:"recht",
+                    ref:"Schutz vor ausschließlich automatisierten Entscheidungen; Datenschutz-Folgenabschätzung verpflichtend bei systematischem Profiling."},
+  "betrvg":        {label:"BetrVG §§ 87, 90, 80, 95", type:"recht",
+                    ref:"§ 87 Abs. 1 Nr. 6: erzwingbare Mitbestimmung (BAG: objektive Überwachungseignung genügt – nahezu jeder KI-Einsatz); § 90: frühzeitige Beratung; § 80 Abs. 3: Sachverständiger bei KI stets erforderlich."},
+  /* adesso-Vorgehensmodell */
+  "adesso-tom":    {label:"adesso Target Operating Model", type:"adesso",
+                    ref:"adesso-Vorgehensmodell: KI-Treiber (Vision, Use Cases) × KI-Enabler (Organisation, Daten, Enablement, Technologie) ≫ KI-Value; Governance als Fundament. Die Dimensionen wirken als Multiplikatoren – fällt eine auf null, ist das Gesamtergebnis null. Vier Etappen: Management-Befähigung → KI-Reifegrad → Use Case Backlog → KI-TOM."}
+};
+
+/* Stufenabhängige rechtliche Mindestanforderungen (kumulativ anzuzeigen) */
+const LEGAL_BASELINE = {
+  1:[{text:"Die KI-Kompetenzpflicht (Art. 4 EU AI Act) gilt seit 02.02.2025 für jede Organisation, die KI einsetzt – unabhängig von Reifegrad und Risikoklasse.", sources:["ai-act-art4"]},
+     {text:"Betriebsrat frühzeitig über geplanten KI-Einsatz unterrichten (§ 90 BetrVG); Mitbestimmung nach § 87 Abs. 1 Nr. 6 vor Einführung klären.", sources:["betrvg"]}],
+  2:[{text:"KI-Systeminventar mit Risikoklassifizierung anlegen (Anbieter-/Betreiberrolle, Annex-III-Prüfung je Use Case).", sources:["ai-act-risiko","ai-act-art26"]},
+     {text:"Datenschutz-Check je Pilot: bei Profiling/automatisierten Entscheidungen DSFA-Pflicht prüfen (Art. 35 DSGVO).", sources:["dsgvo-ki"]}],
+  3:[{text:"Governance an ISO/IEC 42001 orientieren (Rollen, Policies, Kontrollen); DSFA bzw. Grundrechte-Folgenabschätzungen dokumentieren.", sources:["iso-42001","dsgvo-ki"]},
+     {text:"KI-Betriebsvereinbarung (Rahmen- + Einzelvereinbarungen) mit dem Betriebsrat abschließen; Sachverständigen-Budget einplanen (§ 80 Abs. 3 BetrVG).", sources:["betrvg"]}],
+  4:[{text:"Betreiberpflichten operationalisieren: menschliche Aufsicht zuweisen, Logs ≥ 6 Monate aufbewahren, Beschäftigte & Vertretung vor Hochrisiko-Einsatz informieren (Art. 26 Abs. 7).", sources:["ai-act-art26"]}],
+  5:[{text:"Regulatorik-Monitoring etablieren (AI-Act-Fristen/Digital Omnibus, sektorale Aufsicht); bei eigener Modellentwicklung GPAI-Pflichten (Art. 53/55) prüfen.", sources:["ai-act-risiko"]}]
+};
+
+/* Branchenprofile (Schlüssel = Werte der Branchen-Datalist) */
+const BRANCHEN_PROFILE = {
+  "Versicherungen":{regulierung:"hoch",
+    hinweis:"Risikobewertung/Tarifierung in Leben/Kranken = Hochrisiko (Annex III Nr. 5c AI Act). EIOPA-Governance-Prinzipien (2021) und BaFin-BDAI-Aufsicht beachten.",
+    daten:"Gute strukturierte Bestandsdaten, aber Bias-Risiken bei nicht repräsentativen Trainingsdaten."},
+  "Banken & Finanzdienstleistungen":{regulierung:"hoch",
+    hinweis:"Kreditscoring natürlicher Personen = Hochrisiko (Annex III Nr. 5b; Betrugserkennung ausgenommen). Zusätzlich DORA (seit 01/2025), MiFID II, EZB-Modellrisiko-Guidance.",
+    daten:"Datenreich, aber Profiling (Art. 4 Nr. 4 DSGVO) macht die meisten Retail-Scoring-Systeme unweigerlich hochrisiko."},
+  "Öffentlicher Sektor":{regulierung:"hoch",
+    hinweis:"Grundrechte-Folgenabschätzung (Art. 27 AI Act) vor Inbetriebnahme von Hochrisiko-Systemen verpflichtend; Vergaberecht und Transparenzpflichten beachten.",
+    daten:"Fragmentierte Datenlandschaft, Silostrukturen."},
+  "Gesundheitswesen":{regulierung:"hoch",
+    hinweis:"Dual-Compliance: KI-Medizinprodukte (MDR/IVDR mit benannter Stelle) = Hochrisiko; Engpass bei benannten Stellen zeitlich einplanen.",
+    daten:"Hochsensibel (Art. 9 DSGVO), stark fragmentiert."},
+  "Energie & Versorgung":{regulierung:"mittel",
+    hinweis:"KI als Sicherheitskomponente der Versorgung = Hochrisiko (Annex III Nr. 2); reine Prognose-KI i. d. R. nicht. Rahmen: EnWG/Bundesnetzagentur.",
+    daten:"Wachsende Datenbasis durch Dezentralisierung, Integration komplex; KI-Kompetenz laut IEA branchenweit unterdurchschnittlich."},
+  "Industrie & Fertigung":{regulierung:"mittel",
+    hinweis:"Meist außerhalb Hochrisiko (außer Sicherheitskomponenten von Maschinen, Annex I). Hauptbarriere laut Branchenumfragen: Datenfragmentierung und OT/IT-Legacy.",
+    daten:"Sensordaten reichlich, Wartungshistorien oft unstrukturiert/handschriftlich."},
+  "Logistik & Transport":{regulierung:"mittel",
+    hinweis:"Kein dediziertes KI-Regime für Back-Office-KI; autonomes Fahren gesondert reguliert. EU Data Act für Datenteilung relevant.",
+    daten:"Viele Echtzeitdaten (IoT/TMS/WMS), aber über Partner fragmentiert; Multi-Party-Ownership erschwert Compliance."},
+  "Handel & E-Commerce":{regulierung:"niedrig",
+    hinweis:"Überwiegend Minimal-/Transparenzrisiko (Chatbot-Kennzeichnung nach Art. 50 AI Act). Fokus: DSGVO-konforme Personalisierung und Kundenvertrauen.",
+    daten:"Sehr datenreich (Transaktions-, Klick-, CRM-Daten)."}
+};
+
+function srcChipsHtml(keys){
+  if(!keys || !keys.length) return "";
+  return `<span class="src-row">`+keys.map(k=>{
+    const s = SOURCES[k];
+    return s ? `<span class="src-chip ${s.type}" title="${esc(s.ref)}">${esc(s.label)}</span>` : "";
+  }).join("")+`</span>`;
+}
+function caveatBoxHtml(){
+  return `<div class="caveat-box">⚠️ <b>Einordnung:</b> Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – keine Rezepte. Sie sind kritisch zu prüfen und an Branche, Größe, Kultur und Rechtslage des jeweiligen Unternehmens anzupassen. Frameworks wirken als flexible Leitprinzipien, nicht als starre Schrittfolgen (Harrison et al. 2021).</div>`;
+}
+function legalBoxHtml(stage){
+  let items = [];
+  for(let l=1;l<=stage;l++){ (LEGAL_BASELINE[l]||[]).forEach(it=>items.push({item:it, stufe:l})); }
+  if(!items.length) return "";
+  return `
+  <div class="card legal-box">
+    <h3>⚖️ Rechtlicher Rahmen (kumulativ bis Stufe ${stage})</h3>
+    ${items.map(e=>`
+    <div class="legal-item">
+      <span class="stufe-dot">Stufe ${e.stufe}</span>
+      <div>${e.item.text} ${srcChipsHtml(e.item.sources)}</div>
+    </div>`).join("")}
+  </div>`;
+}
+function brancheBoxHtml(){
+  const p = BRANCHEN_PROFILE[(state.meta.branche||"").trim()];
+  if(!p) return "";
+  const regClass = {hoch:"reg-hoch", mittel:"reg-mittel", niedrig:"reg-niedrig"}[p.regulierung]||"";
+  return `
+  <div class="card branche-box">
+    <h4>Branchenkontext: ${esc(state.meta.branche)}<span class="reg-badge ${regClass}">Regulierungsdichte: ${p.regulierung}</span></h4>
+    <p>${p.hinweis}</p>
+    <p><b>Typische Datenlage:</b> ${p.daten}</p>
+  </div>`;
+}
+
 const POSITIVE_KEYWORDS = ["pilot","erfolg","training","schulung","multiplikator","champion","budget","roadmap",
   "offen für","hackathon","engagiert","neugierig","unterstützt","sponsor","motiviert","positiv","interesse","vorbild"];
 const RISK_KEYWORDS = ["angst","sorge","unsicher","widerstand","skeptisch","skepsis","keine zeit","kein budget",
@@ -527,6 +843,7 @@ const DIMENSIONS = [
   {
     id:"strategie", short:"STR", name:"Strategie & Zielbild",
     desc:"KI-Strategie, Priorisierung von Use Cases, Steuerung",
+    tom:"KI-Treiber · Vision & Use Cases",
     questions:[
       {id:"strategie_1", text:"Es gibt eine dokumentierte KI-Strategie mit klaren Zielen.",
        low:"Keine schriftliche Strategie, KI wird zufällig genutzt.", high:"Dokumentierte Strategie mit Zielbild, Budget und Owner.",
@@ -554,21 +871,48 @@ const DIMENSIONS = [
                  "Die KPI-Ergebnisse fließen nachweislich in Entscheidungen ein (z. B. Skalierung/Stopp von Use Cases)."]}
     ],
     recommendations:{
-      1:["Einen 90-minütigen Strategie-Workshop mit der Geschäftsleitung ansetzen, um 3–5 Use Cases zu sammeln und grob zu bewerten (Aufwand/Nutzen-Matrix).",
-         "Eine verantwortliche Person als zentralen Ansprechpartner für das Thema KI benennen."],
-      2:["Gesammelte Use Cases mit einem einfachen Business-Case-Template (Nutzen, Aufwand, Risiko) bewerten und die Top 3 priorisieren.",
-         "Ein einseitiges Zielbild-Dokument erstellen und mit dem Führungskreis abstimmen."],
-      3:["Ein KI-Steuerungsgremium mit fester Kadenz (z. B. monatlich) einrichten, das Priorisierung und Budget verantwortet.",
-         "KPIs je Use Case definieren (z. B. Zeitersparnis, Qualität) und ein einfaches Reporting aufsetzen."],
-      4:["Die KI-Strategie mit der Unternehmensstrategie verzahnen und jährlich im Strategieprozess reviewen.",
-         "Ein Portfolio-Management etablieren, das die Skalierung erfolgreicher Piloten systematisch steuert."],
-      5:["Das Zielbild kontinuierlich mit Markt- und Wettbewerbsbeobachtung weiterentwickeln (z. B. halbjährlicher Strategie-Sprint).",
-         "Eigene KI-Wertschöpfung (neue Produkte/Geschäftsmodelle) aktiv vorantreiben."]
+      1:[{text:"Einen 90-minütigen Strategie-Workshop mit der Geschäftsleitung ansetzen, um 3–5 Use Cases zu sammeln und grob zu bewerten (Aufwand/Nutzen-Matrix).",
+          begruendung:"Management-Support ist meta-analytisch einer der stärksten Treiber organisationaler KI-Adoption – Führung früh einzubinden schafft die Basis.",
+          sources:["toe-meta","errida-lotfi"]},
+         {text:"Eine verantwortliche Person als zentralen Ansprechpartner für das Thema KI benennen.",
+          begruendung:"Klare Verantwortlichkeit ist Kernelement der NIST-GOVERN-Funktion und wiederkehrender Erfolgsfaktor über 37 Change-Modelle.",
+          sources:["nist-rmf","errida-lotfi"]}],
+      2:[{text:"Gesammelte Use Cases mit einem einfachen Business-Case-Template (Nutzen, Aufwand, Risiko) bewerten und die Top 3 priorisieren.",
+          begruendung:"Der wahrgenommene relative Vorteil ist ein signifikanter Adoptionstreiber – Priorisierung macht ihn sichtbar und steuerbar.",
+          sources:["toe-meta"]},
+         {text:"Ein einseitiges Zielbild-Dokument erstellen und mit dem Führungskreis abstimmen.",
+          begruendung:"Vision/Zielbild ist eine der 12 evidenzbasierten Erfolgsfaktor-Kategorien; die OECD-Prinzipien liefern werteseitige Leitplanken.",
+          sources:["errida-lotfi","oecd-ai"]}],
+      3:[{text:"Ein KI-Steuerungsgremium mit fester Kadenz (z. B. monatlich) einrichten, das Priorisierung und Budget verantwortet.",
+          begruendung:"NIST-GOVERN verlangt die Verankerung des KI-Managements in Organisationsstrukturen und strategischen Prioritäten.",
+          sources:["nist-rmf"]},
+         {text:"KPIs je Use Case definieren (z. B. Zeitersparnis, Qualität) und ein einfaches Reporting aufsetzen.",
+          begruendung:"Fehlende Wirkungsmessung ist eine dokumentierte Lücke klassischer Change-Frameworks – KPIs schließen sie.",
+          sources:["kotter-kritik"]}],
+      4:[{text:"Die KI-Strategie mit der Unternehmensstrategie verzahnen und jährlich im Strategieprozess reviewen.",
+          begruendung:"Gartner-Stufe „Systemic“ ist durch bereichsübergreifende strategische Verankerung gekennzeichnet.",
+          sources:["gartner-aim"]},
+         {text:"Ein Portfolio-Management etablieren, das die Skalierung erfolgreicher Piloten systematisch steuert.",
+          begruendung:"Signifikante KI-Vorteile entstehen laut BCG/MIT erst durch systematisches organisationales Lernen statt Einzelpiloten.",
+          sources:["bcg-mit"]}],
+      5:[{text:"Das Zielbild kontinuierlich mit Markt- und Wettbewerbsbeobachtung weiterentwickeln (z. B. halbjährlicher Strategie-Sprint).",
+          begruendung:"Die höchste Reifestufe ist in allen etablierten Modellen durch kontinuierliches Lernen und Anpassen definiert.",
+          sources:["gartner-aim","bcg-mit"]},
+         {text:"Eigene KI-Wertschöpfung (neue Produkte/Geschäftsmodelle) aktiv vorantreiben.",
+          begruendung:"Gartner „Transformational“: KI als Teil der Unternehmens-DNA und Quelle neuer Geschäftsmodelle.",
+          sources:["gartner-aim"]}]
+    },
+    transitions:{
+      1:"Von Bewusstsein zu Experimenten: Ohne sichtbaren Management-Support und benannte Verantwortung starten Piloten nicht – beides zuerst schaffen (Gartner: Awareness → Active).",
+      2:"Pilot-Falle – laut Gartner der häufigste Fehlerpunkt: Piloten brauchen Business Case, Owner und Budget für den Produktivbetrieb, sonst versanden sie.",
+      3:"Von etabliert zu skaliert: Einzelerfolge werden nur durch Portfolio-Steuerung und Verzahnung mit der Unternehmensstrategie bereichsübergreifend (Gartner: Operational → Systemic).",
+      4:"Zur Transformation: KI wird Teil der Strategie-DNA – neue Geschäftsmodelle statt nur optimierter Bestandsprozesse."
     }
   },
   {
     id:"prozesse", short:"PRO", name:"Prozesse & Tools",
     desc:"Integration von KI-Tools in bestehende Workflows",
+    tom:"KI-Enabler · Daten & Technologie",
     questions:[
       {id:"prozesse_1", text:"KI-Tools sind in bestehende Kernprozesse integriert.",
        low:"KI wird isoliert, außerhalb der Kernprozesse genutzt.", high:"KI ist nahtlos in Kernprozesse/Systeme eingebettet.",
@@ -596,21 +940,48 @@ const DIMENSIONS = [
                  "Der Prozess wird nachweislich eingehalten (kein Tool wird am Prozess vorbei eingeführt)."]}
     ],
     recommendations:{
-      1:["Einen Katalog erstellen, welche KI-Tools aktuell (auch inoffiziell) im Einsatz sind, um „Schatten-KI“ sichtbar zu machen.",
-         "Eine einseitige Nutzungsrichtlinie (erlaubt/nicht erlaubt) verabschieden und kommunizieren."],
-      2:["2–3 Pilotprozesse auswählen und dort testweise ein KI-Tool in den bestehenden Workflow integrieren.",
-         "Einen einfachen Freigabeprozess definieren (wer prüft Datenschutz/Sicherheit neuer Tools)."],
-      3:["Für produktiv genutzte Tools verbindliche Standard-Workflows dokumentieren und schulen.",
-         "Datenquellen für die wichtigsten Use Cases konsolidieren und Zugriffsrechte klar regeln."],
-      4:["KI-Funktionalitäten in Kernsysteme (CRM, ERP, Ticketsystem) integrieren statt Insellösungen zu betreiben.",
-         "Eine Tool-Governance mit quartalsweisem Review von Nutzung, Kosten und Risiken etablieren."],
-      5:["Prozesse End-to-End neu denken (Process Redesign), statt KI nur in bestehende Abläufe einzufügen.",
-         "Eine unternehmensweite Datenplattform aufbauen, die KI-Anwendungen automatisiert versorgt."]
+      1:[{text:"Einen Katalog erstellen, welche KI-Tools aktuell (auch inoffiziell) im Einsatz sind, um „Schatten-KI“ sichtbar zu machen.",
+          begruendung:"Ein Systeminventar ist Ausgangspunkt der NIST-MAP-Funktion und Grundlage jeder AI-Act-Risikoklassifizierung.",
+          sources:["nist-rmf","ai-act-risiko"]},
+         {text:"Eine einseitige Nutzungsrichtlinie (erlaubt/nicht erlaubt) verabschieden und kommunizieren.",
+          begruendung:"Dokumentierte Policies sind Kernanforderung der ISO/IEC 42001 – klein anzufangen senkt die Hürde.",
+          sources:["iso-42001"]}],
+      2:[{text:"2–3 Pilotprozesse auswählen und dort testweise ein KI-Tool in den bestehenden Workflow integrieren.",
+          begruendung:"Task-Technology-Fit ist ein validierter Nutzungstreiber – KI wirkt, wenn sie zur Aufgabe passt, nicht daneben.",
+          sources:["utaut-ttf","toe-meta"]},
+         {text:"Einen einfachen Freigabeprozess definieren (wer prüft Datenschutz/Sicherheit neuer Tools).",
+          begruendung:"Ein definierter Prüfschritt operationalisiert DSGVO-Pflichten und die NIST-MANAGE-Funktion im Kleinen.",
+          sources:["dsgvo-ki","nist-rmf"]}],
+      3:[{text:"Für produktiv genutzte Tools verbindliche Standard-Workflows dokumentieren und schulen.",
+          begruendung:"Fehlende Umsetzungs-Templates sind die dokumentierte Lücke klassischer Change-Frameworks – Standard-Workflows füllen sie.",
+          sources:["kotter-kritik"]},
+         {text:"Datenquellen für die wichtigsten Use Cases konsolidieren und Zugriffsrechte klar regeln.",
+          begruendung:"„Data“ ist über 13 Studien hinweg der meistgenannte kritische Erfolgsfaktor von KI-Reifegradmodellen.",
+          sources:["sadiq2021"]}],
+      4:[{text:"KI-Funktionalitäten in Kernsysteme (CRM, ERP, Ticketsystem) integrieren statt Insellösungen zu betreiben.",
+          begruendung:"Facilitating Conditions (Infrastruktur, Integration) sind ein signifikanter Nutzungstreiber im UTAUT-Modell.",
+          sources:["utaut-ttf"]},
+         {text:"Eine Tool-Governance mit quartalsweisem Review von Nutzung, Kosten und Risiken etablieren.",
+          begruendung:"Kontinuierliche Bewertung und Verbesserung sind Kernklauseln der ISO/IEC 42001.",
+          sources:["iso-42001"]}],
+      5:[{text:"Prozesse End-to-End neu denken (Process Redesign), statt KI nur in bestehende Abläufe einzufügen.",
+          begruendung:"Deloitte kennzeichnet hohe Reife durch Prozess-Neugestaltung statt Basisautomatisierung.",
+          sources:["deloitte-aim"]},
+         {text:"Eine unternehmensweite Datenplattform aufbauen, die KI-Anwendungen automatisiert versorgt.",
+          begruendung:"Zentrale Datenversorgung adressiert den meistgenannten Engpass (Datenfragmentierung) auf Skalierungsstufe.",
+          sources:["sadiq2021"]}]
+    },
+    transitions:{
+      1:"Erst Transparenz, dann Experimente: Ohne Schatten-KI-Inventar ist keine seriöse Risikoklassifizierung und kein kontrollierter Pilot möglich.",
+      2:"Pilot-Falle 2→3: Integration in Kernprozesse braucht Betriebs-Owner, Datenzugriff und dokumentierte Workflows – genau die Umsetzungslücke klassischer Change-Frameworks.",
+      3:"Skalierung scheitert am häufigsten an Datenfragmentierung – Datenkonsolidierung und Kernsystem-Integration sind die Eintrittskarte zu Stufe 4.",
+      4:"End-to-End-Redesign statt Insellösungen: Prozesse um die KI-Fähigkeiten herum neu denken."
     }
   },
   {
     id:"skills", short:"SKI", name:"Skills & Kompetenzen",
     desc:"KI-Kompetenzniveau der Mitarbeitenden",
+    tom:"KI-Enabler · Enablement",
     questions:[
       {id:"skills_1", text:"Mitarbeitende verfügen über grundlegende KI-/Prompting-Kompetenz.",
        low:"Kaum Grundverständnis vorhanden.", high:"Breite Belegschaft sicher im Umgang mit KI-Tools.",
@@ -638,21 +1009,48 @@ const DIMENSIONS = [
                  "Kompetenzaufbau ist im HR-Entwicklungsprogramm strukturell verankert."]}
     ],
     recommendations:{
-      1:["Eine 2-stündige Basis-Schulung „KI-Grundlagen & Prompting“ für eine erste Pilotgruppe organisieren.",
-         "Eine kuratierte Liste von 3–5 Lernressourcen an alle Mitarbeitenden verteilen."],
-      2:["Ein Lunch-&-Learn-Format (z. B. alle 2 Wochen) zu konkreten KI-Anwendungsfällen etablieren.",
-         "5–10 Power-User identifizieren und gezielt vertiefend schulen."],
-      3:["Ein rollenbasiertes Trainingscurriculum (Basis/Fortgeschritten/Experte) mit Zertifizierung entwickeln.",
-         "Ein internes Power-User-Netzwerk mit fester Austauschstruktur (z. B. monatliches Forum) aufsetzen."],
-      4:["KI-Kompetenz als festen Bestandteil in Zielvereinbarungen und Weiterbildungsbudgets verankern.",
-         "Ein internes Trainer-Netzwerk aufbauen, das Schulungen eigenständig skaliert (Train-the-Trainer)."],
-      5:["Kompetenzentwicklung kontinuierlich an neue KI-Fähigkeiten anpassen (jährliches Update des Curriculums).",
-         "Externe Sichtbarkeit aufbauen (Fachartikel, Konferenzbeiträge), um Talente anzuziehen."]
+      1:[{text:"Eine 2-stündige Basis-Schulung „KI-Grundlagen & Prompting“ für eine erste Pilotgruppe organisieren.",
+          begruendung:"Die KI-Kompetenzpflicht (Art. 4 AI Act) gilt bereits ab dem ersten KI-Einsatz – zugleich senkt wahrgenommene einfache Bedienbarkeit die Einstiegshürde messbar.",
+          sources:["ai-act-art4","tam-meta"]},
+         {text:"Eine kuratierte Liste von 3–5 Lernressourcen an alle Mitarbeitenden verteilen.",
+          begruendung:"Effort Expectancy (erwarteter Lernaufwand) ist ein signifikanter Adoptionstreiber – niederschwellige Ressourcen senken sie.",
+          sources:["utaut-ttf"]}],
+      2:[{text:"Ein Lunch-&-Learn-Format (z. B. alle 2 Wochen) zu konkreten KI-Anwendungsfällen etablieren.",
+          begruendung:"Regelmäßige, praxisnahe Formate stärken Nutzenwahrnehmung und soziale Norm zugleich.",
+          sources:["tam-meta","utaut-ttf"]},
+         {text:"5–10 Power-User identifizieren und gezielt vertiefend schulen.",
+          begruendung:"Early Adopters (~22 %) sind empirisch identifizierbar und wirken als Multiplikatoren in die Breite.",
+          sources:["rogers-cluster"]}],
+      3:[{text:"Ein rollenbasiertes Trainingscurriculum (Basis/Fortgeschritten/Experte) mit Zertifizierung entwickeln.",
+          begruendung:"Strukturierter Kompetenzaufbau dokumentiert zugleich die Erfüllung der Art.-4-Pflicht; Talent-Readiness ist laut Deloitte der häufigste Engpass (~20 %).",
+          sources:["ai-act-art4","deloitte-aim"]},
+         {text:"Ein internes Power-User-Netzwerk mit fester Austauschstruktur (z. B. monatliches Forum) aufsetzen.",
+          begruendung:"Social Influence ist ein belegter Nutzungstreiber – Netzwerke institutionalisieren ihn.",
+          sources:["utaut-ttf","rogers-cluster"]}],
+      4:[{text:"KI-Kompetenz als festen Bestandteil in Zielvereinbarungen und Weiterbildungsbudgets verankern.",
+          begruendung:"Kompetenzen/Ressourcen zählen zu den 12 evidenzbasierten Erfolgsfaktor-Kategorien des Change-Managements.",
+          sources:["errida-lotfi"]},
+         {text:"Ein internes Trainer-Netzwerk aufbauen, das Schulungen eigenständig skaliert (Train-the-Trainer).",
+          begruendung:"Skalierung über interne Multiplikatoren adressiert den branchenübergreifenden Talent-Engpass.",
+          sources:["deloitte-aim"]}],
+      5:[{text:"Kompetenzentwicklung kontinuierlich an neue KI-Fähigkeiten anpassen (jährliches Update des Curriculums).",
+          begruendung:"Signifikante Vorteile entstehen erst, wenn Organisationen kontinuierlich MIT KI lernen.",
+          sources:["bcg-mit"]},
+         {text:"Externe Sichtbarkeit aufbauen (Fachartikel, Konferenzbeiträge), um Talente anzuziehen.",
+          begruendung:"Höchste Reifestufen sind in etablierten Modellen durch aktive Talentgewinnung und Wissensexport gekennzeichnet.",
+          sources:["gartner-aim"]}]
+    },
+    transitions:{
+      1:"Basis-Kompetenz ist rechtliche Pflicht (Art. 4 AI Act) und Voraussetzung für sinnvolle Experimente – erst schulen, dann pilotieren.",
+      2:"Vom Einzelwissen zur Struktur: Ohne Curriculum und Power-User-Netzwerk bleibt Kompetenz personenabhängig – Talent-Readiness ist laut Deloitte der häufigste Engpass (~20 %).",
+      3:"Skalierung braucht strukturelle Verankerung: KI-Kompetenz in Zielvereinbarungen/Budgets und Train-the-Trainer statt zentraler Schulungsabhängigkeit.",
+      4:"Kontinuierliches Lernen institutionalisieren – das Curriculum jährlich an neue KI-Fähigkeiten anpassen."
     }
   },
   {
     id:"kultur", short:"KUL", name:"Kultur & Mindset",
     desc:"Offenheit, Fehlerkultur, Experimentierfreude",
+    tom:"KI-Enabler · Organisation & Enablement",
     questions:[
       {id:"kultur_1", text:"Mitarbeitende erproben KI-Tools proaktiv und selbstständig.",
        low:"Kaum Eigeninitiative, Abwarten dominiert.", high:"Hohe Experimentierfreude, viele Eigeninitiativen.",
@@ -680,21 +1078,48 @@ const DIMENSIONS = [
                  "Diese Zeitkontingente sind unternehmensweit verankert und werden nachweislich genutzt."]}
     ],
     recommendations:{
-      1:["Eine „KI-Ausprobierwoche“ initiieren, in der Teams risikofrei mit einem Tool experimentieren dürfen.",
-         "Eine Führungskraft als sichtbaren Sponsor gewinnen, der selbst mit KI-Tools arbeitet und berichtet."],
-      2:["Eine kurze Retrospektive nach Piloten einführen, in der offen über Fehler/Learnings gesprochen wird.",
-         "Feste Zeitfenster (z. B. 2 Std./Woche) für KI-Experimente in Pilotteams einrichten."],
-      3:["Erfolgsgeschichten aus Pilotteams aktiv im Intranet/Newsletter teilen, um Nachahmer zu gewinnen.",
-         "Ein internes „Fuckup-Format“ etablieren, in dem gescheiterte Experimente offen reflektiert werden."],
-      4:["Experimentierfreude durch ein internes Innovationsbudget/Hackathon-Format strukturell verankern.",
-         "Führungskräfte-Onboarding um verpflichtende KI-Praxiselemente erweitern."],
-      5:["Eine lernende Organisation etablieren, die Experimente kontinuierlich in Produkte/Prozesse überführt.",
-         "Innovationskultur nach außen tragen, z. B. Kunden/Partner in Experimente einbinden."]
+      1:[{text:"Eine „KI-Ausprobierwoche“ initiieren, in der Teams risikofrei mit einem Tool experimentieren dürfen.",
+          begruendung:"Das Erleben persönlichen Wachstums durch KI („AI-Mindset-Growth“) ist der zweitstärkste Prädiktor positiver KI-Einstellung (β=0.28).",
+          sources:["ai-mindset"]},
+         {text:"Eine Führungskraft als sichtbaren Sponsor gewinnen, der selbst mit KI-Tools arbeitet und berichtet.",
+          begruendung:"Management-Support ist meta-analytisch bestätigter Adoptionstreiber – Vorleben wirkt stärker als Ankündigen.",
+          sources:["toe-meta"]}],
+      2:[{text:"Eine kurze Retrospektive nach Piloten einführen, in der offen über Fehler/Learnings gesprochen wird.",
+          begruendung:"Change-Modelle wirken als flexible Lernschleifen, nicht als starre Abfolgen – Retros institutionalisieren das Lernen.",
+          sources:["harrison2021"]},
+         {text:"Feste Zeitfenster (z. B. 2 Std./Woche) für KI-Experimente in Pilotteams einrichten.",
+          begruendung:"Organisationales Lernen mit KI ist die belegte Voraussetzung für signifikanten Nutzen.",
+          sources:["bcg-mit"]}],
+      3:[{text:"Erfolgsgeschichten aus Pilotteams aktiv im Intranet/Newsletter teilen, um Nachahmer zu gewinnen.",
+          begruendung:"Einstellung ist der stärkste Treiber der Nutzungsabsicht (r=.72) – erlebbare Erfolge formen sie.",
+          sources:["tam-meta"]},
+         {text:"Ein internes „Fuckup-Format“ etablieren, in dem gescheiterte Experimente offen reflektiert werden.",
+          begruendung:"Eine offene Risikokultur ist explizite Anforderung der NIST-GOVERN-Funktion.",
+          sources:["nist-rmf"]}],
+      4:[{text:"Experimentierfreude durch ein internes Innovationsbudget/Hackathon-Format strukturell verankern.",
+          begruendung:"Beteiligung und Ressourcen zählen zu den evidenzbasierten Erfolgsfaktor-Kategorien.",
+          sources:["errida-lotfi"]},
+         {text:"Führungskräfte-Onboarding um verpflichtende KI-Praxiselemente erweitern.",
+          begruendung:"NIST-GOVERN verlangt eine gelebte Risikomanagement-Kultur über alle Führungsebenen.",
+          sources:["nist-rmf"]}],
+      5:[{text:"Eine lernende Organisation etablieren, die Experimente kontinuierlich in Produkte/Prozesse überführt.",
+          begruendung:"Der belegte Unterschied der reifsten Organisationen: systematisches Lernen MIT KI statt punktueller Einführung.",
+          sources:["bcg-mit"]},
+         {text:"Innovationskultur nach außen tragen, z. B. Kunden/Partner in Experimente einbinden.",
+          begruendung:"Transformative Reife schließt Wertschöpfungspartner in das Lernsystem ein.",
+          sources:["gartner-aim"]}]
+    },
+    transitions:{
+      1:"Einstellung ändert sich durch eigenes Erleben (AI-Mindset-Growth, β=0.28) – erst Experimentierräume schaffen, dann Formate skalieren.",
+      2:"Von geduldeten Experimenten zu gelebter Fehlerkultur: Lernen sichtbar machen (Retros, Erfolgsgeschichten), sonst bleibt die Kultur eine Pilot-Nische.",
+      3:"Kultur skaliert über Führung: konsistentes Vorbildverhalten und strukturelle Freiräume (Budget, Formate) über alle Ebenen hinweg.",
+      4:"Lernende Organisation: Experimente münden systematisch in Produkte/Prozesse – der belegte Unterschied der reifsten Organisationen (BCG/MIT)."
     }
   },
   {
     id:"stakeholder", short:"STA", name:"Stakeholder-Akzeptanz & Kommunikation",
     desc:"Informationsstand, Einbindung, Transparenz",
+    tom:"KI-Enabler · Organisation",
     questions:[
       {id:"stakeholder_1", text:"Betroffene sind über Ziele und Fortschritt informiert.",
        low:"Kaum Information, Gerüchte dominieren.", high:"Regelmäßige, transparente Kommunikation über alle Kanäle.",
@@ -722,21 +1147,48 @@ const DIMENSIONS = [
                  "Mitarbeitende berichten von sich aus (ungefragt) über erlebten Nutzen."]}
     ],
     recommendations:{
-      1:["Eine erste Town-Hall/Info-Mail ansetzen, die Ziel und Zeitplan der KI-Initiative transparent macht.",
-         "Ein FAQ-Dokument erstellen, das häufige Fragen/Sorgen proaktiv beantwortet."],
-      2:["Ein regelmäßiges Update-Format (z. B. monatlicher Newsletter) mit Fortschritt einführen.",
-         "Einen Feedback-Kanal (Umfrage, Ideenbox) einrichten, um Stimmungsbild und Anliegen zu erfassen."],
-      3:["Mitarbeitende aktiv in Pilotgestaltung einbinden (z. B. Co-Design-Workshops).",
-         "Konkrete Quick-Wins mit Zahlen kommunizieren (z. B. „X Stunden pro Woche gespart“)."],
-      4:["Ein strukturiertes Stakeholder-Mapping mit individuellen Kommunikationsplänen je Zielgruppe pflegen.",
-         "Mitarbeitende als Botschafter aktiv in externe Kommunikation einbinden."],
-      5:["Kommunikation zu einem kontinuierlichen Dialogformat weiterentwickeln (z. B. reguläre Q&A mit GL).",
-         "Transparenz-Standards für KI-Kommunikation auch extern etablieren."]
+      1:[{text:"Eine erste Town-Hall/Info-Mail ansetzen, die Ziel und Zeitplan der KI-Initiative transparent macht.",
+          begruendung:"Frühzeitige Unterrichtung ist zugleich BetrVG-Pflicht (§ 90); Kommunikation ist eine der 12 Erfolgsfaktor-Kategorien. Auf Angst-Rhetorik verzichten – die „70 %-Scheiterrate“ ist empirisch widerlegt.",
+          sources:["errida-lotfi","betrvg","hughes-70"]},
+         {text:"Ein FAQ-Dokument erstellen, das häufige Fragen/Sorgen proaktiv beantwortet.",
+          begruendung:"Transparente Nutzen-Kommunikation adressiert den stärksten Adoptionshebel: den wahrgenommenen Nutzen.",
+          sources:["tam-meta"]}],
+      2:[{text:"Ein regelmäßiges Update-Format (z. B. monatlicher Newsletter) mit Fortschritt einführen.",
+          begruendung:"Kontinuierliche Kommunikation ist evidenzbasierter Erfolgsfaktor – einmalige Ankündigungen verpuffen.",
+          sources:["errida-lotfi"]},
+         {text:"Einen Feedback-Kanal (Umfrage, Ideenbox) einrichten, um Stimmungsbild und Anliegen zu erfassen.",
+          begruendung:"Beteiligung gehört zu den bestbelegten Erfolgsfaktoren des Change-Managements.",
+          sources:["errida-lotfi"]}],
+      3:[{text:"Mitarbeitende aktiv in Pilotgestaltung einbinden (z. B. Co-Design-Workshops).",
+          begruendung:"Ko-Kreation stärkt Nutzenwahrnehmung und Einstellung – die beiden stärksten Adoptionstreiber.",
+          sources:["tam-meta","errida-lotfi"]},
+         {text:"Konkrete Quick-Wins mit Zahlen kommunizieren (z. B. „X Stunden pro Woche gespart“).",
+          begruendung:"Performance Expectancy ist der stärkste UTAUT-Nutzungstreiber (β=0.304) – belegter Nutzen schlägt Versprechen.",
+          sources:["utaut-ttf"]}],
+      4:[{text:"Ein strukturiertes Stakeholder-Mapping mit individuellen Kommunikationsplänen je Zielgruppe pflegen.",
+          begruendung:"Zielgruppendifferenzierung folgt der empirischen Adoptertypen-Verteilung – eine Botschaft erreicht nie alle.",
+          sources:["rogers-cluster"]},
+         {text:"Mitarbeitende als Botschafter aktiv in externe Kommunikation einbinden.",
+          begruendung:"Social Influence wirkt als belegter Nutzungstreiber auch über Peer-Botschafter.",
+          sources:["utaut-ttf"]}],
+      5:[{text:"Kommunikation zu einem kontinuierlichen Dialogformat weiterentwickeln (z. B. reguläre Q&A mit GL).",
+          begruendung:"Reife Organisationen verstetigen Dialog statt Kampagnen – Kommunikation als Daueraufgabe.",
+          sources:["errida-lotfi"]},
+         {text:"Transparenz-Standards für KI-Kommunikation auch extern etablieren.",
+          begruendung:"Transparenz ist Kernprinzip der OECD AI Principles und der NIST-Trustworthiness-Merkmale.",
+          sources:["oecd-ai","nist-rmf"]}]
+    },
+    transitions:{
+      1:"Einmalige Information verpufft – der Übergang gelingt über wiederkehrende Formate und echte Feedback-Kanäle.",
+      2:"Von Information zu Beteiligung: Ko-Kreation und mit Zahlen belegte Quick-Wins machen den Nutzen erlebbar – den stärksten Adoptionshebel überhaupt.",
+      3:"Differenzierung statt Einheitskommunikation: Stakeholder-Mapping je Zielgruppe entlang der Adoptertypen-Verteilung.",
+      4:"Vom Kampagnenmodus zum Dauerdialog – Kommunikation wird stehende Struktur, nicht Projektaufgabe."
     }
   },
   {
     id:"widerstaende", short:"WID", name:"Widerstände & Multiplikatoren",
     desc:"Umgang mit Skepsis, Change Agents",
+    tom:"KI-Enabler · Organisation",
     questions:[
       {id:"widerstaende_1", text:"Es gibt identifizierte Change Agents/Multiplikatoren in den Teams.",
        low:"Keine erkennbaren Multiplikatoren.", high:"Aktives, geschultes Netzwerk an Change Agents je Bereich.",
@@ -764,16 +1216,42 @@ const DIMENSIONS = [
                  "Das Widerstands-Mapping wird regelmäßig aktualisiert und im Projektteam besprochen."]}
     ],
     recommendations:{
-      1:["Eine erste Stakeholder-Analyse (Befürworter/Skeptiker) als einfache Liste erstellen.",
-         "1:1-Gespräche mit den einflussreichsten Skeptikern führen, um Sorgen konkret zu verstehen."],
-      2:["Erste Change Agents in Pilotteams benennen und mit klarem Mandat ausstatten.",
-         "Ein „Sorgen-Register“ anlegen, in dem Bedenken gesammelt und mit Maßnahmen beantwortet werden."],
-      3:["Ein strukturiertes Multiplikatoren-Netzwerk je Fachbereich mit regelmäßigem Austausch aufbauen.",
-         "Kritiker gezielt in Testphasen als „Quality Gate“ einbinden."],
-      4:["Multiplikatoren-Netzwerk mit eigenem Budget/Mandat für lokale Initiativen ausstatten.",
-         "Ein Frühwarnsystem für Widerstände etablieren (z. B. regelmäßige Pulse-Checks)."],
-      5:["Multiplikatoren-Netzwerk fest in der Führungskräfteentwicklung verankern.",
-         "Widerstands-Management als Standardprozess in jedes neue Change-/KI-Projekt integrieren."]
+      1:[{text:"Eine erste Stakeholder-Analyse (Befürworter/Skeptiker) als einfache Liste erstellen.",
+          begruendung:"Die Adoptertypen-Verteilung (Early Adopters bis Laggards) ist empirisch reproduzierbar – wer sie kennt, kann gezielt ansprechen.",
+          sources:["rogers-cluster"]},
+         {text:"1:1-Gespräche mit den einflussreichsten Skeptikern führen, um Sorgen konkret zu verstehen.",
+          begruendung:"Einstellung ist der stärkste Treiber der Nutzungsabsicht – sie ändert sich im Gespräch, nicht per Rundmail.",
+          sources:["tam-meta"]}],
+      2:[{text:"Erste Change Agents in Pilotteams benennen und mit klarem Mandat ausstatten.",
+          begruendung:"Early Adopters (~22 %) wirken über Social Influence als natürliche Multiplikatoren.",
+          sources:["rogers-cluster","utaut-ttf"]},
+         {text:"Ein „Sorgen-Register“ anlegen, in dem Bedenken gesammelt und mit Maßnahmen beantwortet werden; den Betriebsrat dabei früh als Partner einbinden.",
+          begruendung:"Mitbestimmung ist bei KI-Einsatz i. d. R. erzwingbar (§ 87 Abs. 1 Nr. 6 BetrVG) – frühe Einbindung verhindert spätere Blockaden.",
+          sources:["betrvg"]}],
+      3:[{text:"Ein strukturiertes Multiplikatoren-Netzwerk je Fachbereich mit regelmäßigem Austausch aufbauen.",
+          begruendung:"Social Influence ist ein signifikanter Nutzungstreiber – Netzwerke machen ihn planbar.",
+          sources:["utaut-ttf"]},
+         {text:"Kritiker gezielt in Testphasen als „Quality Gate“ einbinden.",
+          begruendung:"Einbindung statt Umgehung verändert Einstellungen und liefert zugleich bessere Testabdeckung.",
+          sources:["tam-meta"]}],
+      4:[{text:"Multiplikatoren-Netzwerk mit eigenem Budget/Mandat für lokale Initiativen ausstatten.",
+          begruendung:"Ressourcen und Befähigung zählen zu den evidenzbasierten Erfolgsfaktor-Kategorien.",
+          sources:["errida-lotfi"]},
+         {text:"Ein Frühwarnsystem für Widerstände etablieren (z. B. regelmäßige Pulse-Checks).",
+          begruendung:"Late Majority und Laggards (~45 %) adoptieren spät – kontinuierliches Monitoring erkennt Blockaden früh.",
+          sources:["rogers-cluster"]}],
+      5:[{text:"Multiplikatoren-Netzwerk fest in der Führungskräfteentwicklung verankern.",
+          begruendung:"Konsistentes Vorbildverhalten über Führungsebenen ist Merkmal höchster Kultur-Reife.",
+          sources:["gartner-aim"]},
+         {text:"Widerstands-Management als Standardprozess in jedes neue Change-/KI-Projekt integrieren.",
+          begruendung:"Institutionalisierung entspricht der höchsten Reifegradlogik („Optimized“) etablierter Modelle.",
+          sources:["sadiq2021"]}]
+    },
+    transitions:{
+      1:"Von der Analyse zum Mandat: Change Agents offiziell benennen und den Betriebsrat früh einbinden – § 87 BetrVG ist erzwingbar, späte Einbindung blockiert das Projekt.",
+      2:"Multiplikatoren wirken erst als Netzwerk mit festem Austausch – vereinzelte Change Agents ohne Struktur verpuffen.",
+      3:"Vom Reagieren zum Frühwarnsystem: Late Majority und Laggards (~45 %) adoptieren spät – kontinuierliche Pulse-Checks erkennen Blockaden rechtzeitig.",
+      4:"Institutionalisieren: Widerstands-Management wird Standardprozess jedes neuen Change-/KI-Projekts."
     }
   }
 ];
@@ -1139,6 +1617,7 @@ function renderErhebung(){
       document.getElementById("val-"+qid).textContent = suggested;
       e.currentTarget.style.display = "none";
       refreshDimBadge(findDim(qid));
+      scheduleAutosave();
     });
   });
 
@@ -1188,6 +1667,7 @@ async function agentAnalyzeDim(dimId){
     });
     state.answered.add(dim.questions[0].id);
     state.agentStatus[dimId] = {type:"ok", text:"✓ Agent hat "+applied+" von "+(dim.questions.length*4)+" Kriterien als erfüllt markiert."};
+    scheduleAutosave();
   } catch(err){
     state.agentStatus[dimId] = {type:"error", text:"✗ Fehler: "+err.message};
   } finally {
@@ -1320,7 +1800,7 @@ async function agentGenerateSummary(viewMode){
   renderReport();
 
   const dimLines = R.dims.map(d=>`- ${d.dim.name}: Score ${fmt1(d.avg)}/5, Stufe ${d.stage} (${stageInfo(d.stage).name})${d.note?" — Notiz: "+d.note:""}`).join("\n");
-  const top3Lines = R.top3.map((t,i)=>`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0]}`).join("\n");
+  const top3Lines = R.top3.map((t,i)=>`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0].text}`).join("\n");
   const dataBlock = `Kunde/Bereich: ${state.meta.kunde||"n/a"} / ${state.meta.bereich||"n/a"}${state.meta.branche?" (Branche: "+state.meta.branche+")":""}\n`+
     `Gesamt-Reifegrad: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n\n`+
     `Scores je Dimension:\n${dimLines}\n\nTop-3 Handlungsempfehlungen:\n${top3Lines}`;
@@ -1347,6 +1827,14 @@ function renderConsultantView(R){
   const {dims, overallAvg, overallStage, top3} = R;
   const os = stageInfo(overallStage);
 
+  /* Engpass-Warnung nach der Multiplikator-Logik des adesso TOM:
+     die schwächste Dimension begrenzt das Gesamtergebnis */
+  const minDim = dims.reduce((a,b)=> (b.avg < a.avg ? b : a), dims[0]);
+  const engpassKritisch = (minDim.stage <= 1 && overallStage >= 2) || (overallStage - minDim.stage >= 2);
+  const engpassHtml = engpassKritisch ? `
+    <div class="engpass-box">⚠️ <b>Kritischer Engpass: ${minDim.dim.name}</b> (Stufe ${minDim.stage}, Score ${fmt1(minDim.avg)}) liegt deutlich unter dem Gesamtniveau (Stufe ${overallStage}).
+    Nach der Multiplikator-Logik des adesso Target Operating Model begrenzt die schwächste Dimension das Gesamtergebnis – hier priorisieren, bevor andere Dimensionen weiter ausgebaut werden. ${srcChipsHtml(["adesso-tom"])}</div>` : "";
+
   const dimCards = dims.map(d=>{
     const s = stageInfo(d.stage);
     let notesHtml = "";
@@ -1364,7 +1852,10 @@ function renderConsultantView(R){
     return `
     <div class="card dim-result-card">
       <div class="dim-result-top">
-        <h4>${d.dim.name}</h4>
+        <div>
+          <h4>${d.dim.name}</h4>
+          ${d.dim.tom ? `<div class="tom-tag">TOM: ${d.dim.tom}</div>` : ""}
+        </div>
         ${stageChipHtml(d.stage)}
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${d.avg/5*100}%;background:${s.hex}"></div></div>
@@ -1372,6 +1863,7 @@ function renderConsultantView(R){
       <div class="qbreak">${qBreak}</div>
       ${notesHtml}
       ${tagsHtml}
+      ${(d.stage < 5 && d.dim.transitions && d.dim.transitions[d.stage]) ? `<div class="rec-transition">🚧 <b>Richtung Stufe ${d.stage+1}:</b> ${d.dim.transitions[d.stage]}</div>` : ""}
     </div>`;
   }).join("");
 
@@ -1384,8 +1876,10 @@ function renderConsultantView(R){
       <div class="top3-rank">${i+1}</div>
       <div class="top3-body">
         <b>${t.dim.name}</b> — ${stageChipHtml(t.stage)}
-        <p>${rec}</p>
-        <span class="top3-tag">Score ${fmt1(t.avg)}/5 · Lücke zum Optimum: ${gap} Punkte</span>
+        <p>${rec.text}</p>
+        ${rec.begruendung ? `<div class="rec-begruendung">${rec.begruendung}</div>` : ""}
+        ${srcChipsHtml(rec.sources)}
+        <span class="top3-tag" style="display:block;margin-top:6px;">Score ${fmt1(t.avg)}/5 · Lücke zum Optimum: ${gap} Punkte</span>
       </div>
     </div>`;
   }).join("");
@@ -1396,7 +1890,7 @@ function renderConsultantView(R){
       ${STAGES.map(s=>`
         <div class="lib-stage-row">
           <div class="lib-stage-name"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${s.hex};margin-right:6px;"></span>Stufe ${s.level} – ${s.name}</div>
-          <div class="lib-stage-recs">${dim.recommendations[s.level].map(r=>`<div>• ${r}</div>`).join("")}</div>
+          <div class="lib-stage-recs">${dim.recommendations[s.level].map(r=>`<div>• ${r.text} ${srcChipsHtml(r.sources)}</div>`).join("")}</div>
         </div>`).join("")}
     </div>`).join("");
 
@@ -1414,7 +1908,12 @@ function renderConsultantView(R){
       </div>
     </div>
 
+    ${engpassHtml}
+
     ${agentSummaryBoxHtml('consultant')}
+
+    ${caveatBoxHtml()}
+    ${brancheBoxHtml()}
 
     <div class="grid-2">
       <div class="card chart-card">
@@ -1427,7 +1926,15 @@ function renderConsultantView(R){
       </div>
     </div>
 
+    ${legalBoxHtml(overallStage)}
+
     <div class="dim-results-grid">${dimCards}</div>
+
+    <div class="card etappe-box">
+      <h3>🧭 Einordnung ins adesso-Vorgehensmodell</h3>
+      <p>Dieses Assessment ist <b>Etappe 2 („Verstehen“)</b> der vier Etappen der KI-Strategie. Empfohlene nächste Etappe: <b>Use Case Backlog</b> – identifizierte KI-Use-Cases ganzheitlich nach ROI, Umsetzbarkeit und strategischer Relevanz bewerten und priorisieren. ${srcChipsHtml(["adesso-tom"])}</p>
+      <div class="etappen-track">Management-Befähigung&nbsp;→&nbsp;<b>KI-Reifegrad (Sie sind hier)</b>&nbsp;→&nbsp;Use Case Backlog&nbsp;→&nbsp;KI Target Operating Model</div>
+    </div>
 
     <details class="card accordion-lib">
       <summary>Alle Handlungsempfehlungen je Dimension &amp; Reifestufe anzeigen (Referenz)</summary>
@@ -1458,13 +1965,13 @@ function renderKundeView(R){
   const potentialHtml = potentials.map(d=>`
     <div class="kunde-mini-card">
       <h5>${d.dim.name}</h5>
-      <p>${d.dim.recommendations[d.stage][0]}</p>
+      <p>${d.dim.recommendations[d.stage][0].text}</p>
     </div>`).join("");
 
   const stepsHtml = top3.map(t=>`
     <div class="kunde-step">
       <div class="kunde-step-num"></div>
-      <p><b>${t.dim.name}:</b> ${t.dim.recommendations[t.stage][0]}</p>
+      <p><b>${t.dim.name}:</b> ${t.dim.recommendations[t.stage][0].text}</p>
     </div>`).join("");
 
   return `
@@ -1502,7 +2009,7 @@ function renderKundeView(R){
       <div class="kunde-steps">${stepsHtml}</div>
     </div>
 
-    <div class="kunde-footer">Vertraulich – erstellt von adesso für ${esc(state.meta.kunde)||"Kunde"} am ${esc(state.meta.datum)}.</div>
+    <div class="kunde-footer">Alle Empfehlungen sind Ausgangspunkte und werden gemeinsam an Ihre konkrete Situation angepasst.<br>Vertraulich – erstellt von adesso für ${esc(state.meta.kunde)||"Kunde"} am ${esc(state.meta.datum)}.</div>
   </div>`;
 }
 
@@ -1516,6 +2023,9 @@ function buildRadar(canvasId, R){
     return;
   }
   const ctx = canvas.getContext("2d");
+  const dark = document.body.classList.contains("theme-dark");
+  const lineColor = dark ? "#3E9BE3" : "#006EC7";
+  const gridColor = dark ? "rgba(255,255,255,.14)" : "rgba(0,0,0,.1)";
   new Chart(ctx, {
     type:"radar",
     data:{
@@ -1523,15 +2033,20 @@ function buildRadar(canvasId, R){
       datasets:[{
         label:"Reifegrad (1-5)",
         data,
-        backgroundColor:"rgba(0,110,199,0.15)",
-        borderColor:"#006EC7",
-        pointBackgroundColor:"#006EC7",
+        backgroundColor: dark ? "rgba(62,155,227,0.22)" : "rgba(0,110,199,0.15)",
+        borderColor:lineColor,
+        pointBackgroundColor:lineColor,
         borderWidth:2
       }]
     },
     options:{
       responsive:true,
-      scales:{ r:{ min:0, max:5, ticks:{stepSize:1}, pointLabels:{font:{size:11}} } },
+      scales:{ r:{
+        min:0, max:5,
+        ticks:{stepSize:1, color: dark ? "#B8B2AA" : "#666", backdropColor:"transparent"},
+        grid:{color:gridColor}, angleLines:{color:gridColor},
+        pointLabels:{font:{size:11}, color: dark ? "#ECEAE7" : "#262422"}
+      } },
       plugins:{ legend:{display:false} }
     }
   });
@@ -1567,10 +2082,10 @@ function buildSummaryText(){
     [...R.dims].sort((a,b)=>b.avg-a.avg).slice(0,2).forEach(d=>lines.push(`- ${d.dim.name} (${stageInfo(d.stage).name})`));
     lines.push("");
     lines.push("HANDLUNGSFELDER MIT POTENZIAL:");
-    [...R.dims].sort((a,b)=>a.avg-b.avg).slice(0,2).forEach(d=>lines.push(`- ${d.dim.name}: ${d.dim.recommendations[d.stage][0]}`));
+    [...R.dims].sort((a,b)=>a.avg-b.avg).slice(0,2).forEach(d=>lines.push(`- ${d.dim.name}: ${d.dim.recommendations[d.stage][0].text}`));
     lines.push("");
     lines.push("EMPFOHLENE NÄCHSTE SCHRITTE:");
-    R.top3.forEach((t,i)=>lines.push(`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0]}`));
+    R.top3.forEach((t,i)=>lines.push(`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0].text}`));
     lines.push("");
     lines.push(`Vertraulich – erstellt von adesso für ${state.meta.kunde||"Kunde"} am ${state.meta.datum}.`);
   } else {
@@ -1579,6 +2094,10 @@ function buildSummaryText(){
     lines.push("");
     lines.push(`GESAMT-REIFEGRAD: Stufe ${os.level} – ${os.name} (Score ${fmt1(R.overallAvg)}/5)`);
     lines.push(os.desc);
+    const minD = R.dims.reduce((a,b)=> (b.avg < a.avg ? b : a), R.dims[0]);
+    if((minD.stage <= 1 && R.overallStage >= 2) || (R.overallStage - minD.stage >= 2)){
+      lines.push(`KRITISCHER ENGPASS: ${minD.dim.name} (Stufe ${minD.stage}) begrenzt nach der Multiplikator-Logik des adesso TOM das Gesamtergebnis.`);
+    }
     lines.push("");
     lines.push("SCORES JE DIMENSION:");
     R.dims.forEach(d=>{
@@ -1588,9 +2107,11 @@ function buildSummaryText(){
     lines.push("");
     lines.push("TOP-3 PRIORISIERTE HANDLUNGSEMPFEHLUNGEN:");
     R.top3.forEach((t,i)=>{
-      lines.push(`${i+1}. [${t.dim.name} | Stufe ${t.stage}] ${t.dim.recommendations[t.stage].join(" / ")}`);
+      lines.push(`${i+1}. [${t.dim.name} | Stufe ${t.stage}] ${t.dim.recommendations[t.stage].map(r=>r.text).join(" / ")}`);
     });
     if(state.globalNotes){ lines.push(""); lines.push("GLOBALE BEOBACHTUNGEN:"); lines.push(state.globalNotes); }
+    lines.push("");
+    lines.push("Hinweis: Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an den Unternehmenskontext anpassen.");
   }
   return lines.join("\n");
 }
@@ -1622,12 +2143,186 @@ function resetAll(){
   state.dimNotes = {};
   state.globalNotes = "";
   document.getElementById("globalNotes").value = "";
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  dirtySinceExport = false;
+  document.getElementById("autosaveInfo").textContent = "";
   renderErhebung();
   goToStep("angaben");
 }
 
+/* =========================================================================
+   PERSISTENZ: Auto-Save (localStorage) + JSON-Export/-Import
+   Konzept: docs/datensicherheit-konzept.md – keine API-Keys, sichtbarer
+   Indikator, Löschen-Button; JSON-Datei als bewusste Sicherung.
+   ========================================================================= */
+const STORAGE_KEY = "ki-reifegrad-autosave-v1";
+let autosaveTimer = null;
+let dirtySinceExport = false;
+
+function hasContent(){
+  return state.answered.size>0 || !!state.globalNotes ||
+    Object.values(state.dimNotes).some(v=>v && v.trim()) || !!state.meta.kunde;
+}
+function serializeState(){
+  return {
+    version:1, tool:"adesso-ki-reifegrad", savedAt:new Date().toISOString(),
+    meta:state.meta, answers:state.answers, criteria:state.criteria,
+    overridden:[...state.overridden], answered:[...state.answered],
+    dimNotes:state.dimNotes, globalNotes:state.globalNotes,
+    agentEvidence:state.agentEvidence
+    /* bewusst NICHT enthalten: state.agent (API-Keys/Tokens) */
+  };
+}
+function applySnapshot(snap){
+  if(!snap || snap.version!==1) throw new Error("Unbekanntes oder inkompatibles Dateiformat.");
+  Object.keys(state.meta).forEach(k=>{ state.meta[k] = (snap.meta && typeof snap.meta[k]==="string") ? snap.meta[k] : ""; });
+  DIMENSIONS.forEach(d=>d.questions.forEach(q=>{
+    const a = snap.answers && snap.answers[q.id];
+    state.answers[q.id] = (typeof a==="number" && a>=1 && a<=5) ? a : 1;
+    const c = snap.criteria && snap.criteria[q.id];
+    state.criteria[q.id] = Array.isArray(c) ? [0,1,2,3].map(i=>!!c[i]) : [false,false,false,false];
+  }));
+  state.overridden = new Set(Array.isArray(snap.overridden) ? snap.overridden : []);
+  state.answered = new Set(Array.isArray(snap.answered) ? snap.answered : []);
+  state.dimNotes = snap.dimNotes || {};
+  state.globalNotes = snap.globalNotes || "";
+  state.agentEvidence = snap.agentEvidence || {};
+  syncMetaFields();
+  renderErhebung();
+  if(state.step==="auswertung"){ renderReport(); }
+}
+function syncMetaFields(){
+  document.getElementById("metaKunde").value = state.meta.kunde||"";
+  document.getElementById("metaBereich").value = state.meta.bereich||"";
+  document.getElementById("metaBranche").value = state.meta.branche||"";
+  document.getElementById("metaConsultant").value = state.meta.consultant||"";
+  document.getElementById("metaDatum").value = state.meta.datum||"";
+  document.getElementById("metaKontext").value = state.meta.kontext||"";
+  document.getElementById("globalNotes").value = state.globalNotes||"";
+}
+function scheduleAutosave(){
+  dirtySinceExport = true;
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(()=>{
+    try{
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(serializeState()));
+      document.getElementById("autosaveInfo").textContent = "⟳ automatisch zwischengespeichert "+new Date().toTimeString().slice(0,5);
+    }catch(e){ /* localStorage voll oder blockiert – JSON-Export bleibt möglich */ }
+  }, 800);
+}
+function exportJson(){
+  const snap = serializeState();
+  /* Dateiname bewusst ohne Kundenname (siehe Datensicherheitskonzept) */
+  const stamp = (state.meta.datum || new Date().toISOString().slice(0,10)) + "_" + new Date().toTimeString().slice(0,5).replace(":","");
+  const blob = new Blob([JSON.stringify(snap,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ki-reifegrad_"+stamp+".json";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  dirtySinceExport = false;
+  document.getElementById("autosaveInfo").textContent = "💾 als JSON gesichert "+new Date().toTimeString().slice(0,5);
+}
+function importJson(){
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = ".json,application/json";
+  inp.onchange = ()=>{
+    const f = inp.files && inp.files[0];
+    if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{
+      try{
+        applySnapshot(JSON.parse(r.result));
+        scheduleAutosave();
+        document.getElementById("autosaveInfo").textContent = "📂 geladen: "+f.name;
+      }catch(e){ alert("Datei konnte nicht geladen werden: "+e.message); }
+    };
+    r.readAsText(f);
+  };
+  inp.click();
+}
+function clearLocalData(){
+  if(!confirm("Lokalen Zwischenspeicher dieses Browsers löschen?\n(Die aktuelle Sitzung bleibt geöffnet; exportierte JSON-Dateien sind nicht betroffen.)")) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  document.getElementById("autosaveInfo").textContent = "🗑️ Zwischenspeicher gelöscht";
+}
+
+/* Auto-Save an alle Eingaben hängen (Delegation) + Warnung beim Verlassen */
+document.addEventListener("input", scheduleAutosave);
+document.addEventListener("change", scheduleAutosave);
+window.addEventListener("beforeunload",(e)=>{
+  if(dirtySinceExport && hasContent()){ e.preventDefault(); e.returnValue = ""; }
+});
+
+/* Hell-/Dunkel-/System-Modus (Segment-Umschalter, analog adnetwork) */
+const THEME_KEY = "ki-reifegrad-theme";
+let themeChoice = "system";
+function resolvedTheme(){
+  if(themeChoice === "system"){
+    return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+  }
+  return themeChoice;
+}
+function applyTheme(choice){
+  themeChoice = choice;
+  document.body.classList.toggle("theme-dark", resolvedTheme()==="dark");
+  document.querySelectorAll("#themeSwitch button").forEach(b=>b.classList.toggle("active", b.dataset.theme===choice));
+  try{ localStorage.setItem(THEME_KEY, choice); }catch(e){}
+  if(state.step==="auswertung"){ renderReport(); } /* Charts mit passenden Farben neu zeichnen */
+}
+document.getElementById("themeSwitch").addEventListener("click",(e)=>{
+  const b = e.target.closest("button");
+  if(b) applyTheme(b.dataset.theme);
+});
+(function initTheme(){
+  let c = "system";
+  try{
+    const s = localStorage.getItem(THEME_KEY);
+    if(s==="light" || s==="dark" || s==="system") c = s;
+  }catch(e){}
+  applyTheme(c);
+  if(window.matchMedia){
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = ()=>{ if(themeChoice==="system") applyTheme("system"); };
+    if(mq.addEventListener){ mq.addEventListener("change", onChange); }
+  }
+})();
+
+/* Kurzanleitung: beim ersten Besuch automatisch, danach über ❓-Button */
+const INTRO_KEY = "ki-reifegrad-intro-seen-v1";
+function showIntro(){ document.getElementById("introOverlay").classList.add("open"); }
+function closeIntro(){
+  document.getElementById("introOverlay").classList.remove("open");
+  try{ localStorage.setItem(INTRO_KEY, "1"); }catch(e){}
+}
+document.getElementById("introOverlay").addEventListener("click",(e)=>{ if(e.target===e.currentTarget) closeIntro(); });
+
 /* Init */
 renderErhebung();
+try{ if(!localStorage.getItem(INTRO_KEY)) showIntro(); }catch(e){}
+
+/* Zwischenstand aus früherer Sitzung anbieten */
+(function restoreAutosave(){
+  let snap = null;
+  try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) snap = JSON.parse(raw); }catch(e){}
+  if(!snap) return;
+  const snapHasContent = (snap.answered && snap.answered.length) || (snap.meta && snap.meta.kunde) ||
+    snap.globalNotes || Object.values(snap.dimNotes||{}).some(v=>v);
+  if(!snapHasContent){ return; }
+  const label = (snap.meta && snap.meta.kunde) ? "„"+snap.meta.kunde+"“" : "ohne Kundenname";
+  const when = snap.savedAt ? new Date(snap.savedAt).toLocaleString("de-DE") : "unbekannt";
+  if(confirm("Zwischengespeichertes Assessment gefunden ("+label+", Stand: "+when+").\n\nFortsetzen?\n(„Abbrechen“ verwirft den Zwischenstand.)")){
+    try{
+      applySnapshot(snap);
+      document.getElementById("autosaveInfo").textContent = "⟳ Zwischenstand wiederhergestellt";
+    }catch(e){
+      alert("Zwischenstand konnte nicht geladen werden.");
+      try{ localStorage.removeItem(STORAGE_KEY); }catch(_){}
+    }
+  } else {
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  }
+})();
 </script>
 </body>
 </html>
