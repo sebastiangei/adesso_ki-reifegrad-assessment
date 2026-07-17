@@ -406,6 +406,15 @@
 
   /* ---------- Persistenz-Leiste ---------- */
   .persist-bar{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;flex-wrap:wrap;}
+  .persist-label{font-size:12px;font-weight:700;color:var(--ink-soft);}
+  /* ---------- Skala-Hinweis-Banner (Erhebung) ---------- */
+  .skala-banner{display:none;align-items:center;gap:12px;background:var(--accent-blue-bg);border:1px solid var(--accent-blue-border);border-radius:var(--radius);padding:10px 14px;margin:0 0 16px;font-size:13px;color:var(--ink-soft);}
+  .skala-banner .btn-mini{margin-left:auto;flex-shrink:0;}
+  /* ---------- Auswertungsgrundlage-Block ---------- */
+  .qbreak-box{margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);}
+  .qbreak-title{font-size:10.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
+  .src-label{font-size:10px;font-weight:700;color:var(--ink-faint);margin-right:2px;}
+  .intro-meta summary{cursor:pointer;font-weight:700;font-size:12.5px;color:var(--brand-primary);user-select:none;}
   .btn-mini{
     border:1px solid var(--border);background:var(--paper);color:var(--ink-soft);
     font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;
@@ -504,7 +513,8 @@
     <div class="step" data-step="auswertung"><div class="num">3</div><div class="lbl">Auswertung &amp; Report</div></div>
   </nav>
 
-  <div class="persist-bar no-print">
+  <div class="persist-bar no-print" title="Gilt für das gesamte Assessment (alle drei Schritte), nicht nur für die aktuelle Ansicht.">
+    <span class="persist-label">Assessment-Stand:</span>
     <button type="button" class="btn-mini" onclick="exportJson()">💾 Speichern (JSON)</button>
     <button type="button" class="btn-mini" onclick="importJson()">📂 Laden</button>
     <button type="button" class="btn-mini" onclick="clearLocalData()">🗑️ Lokale Daten löschen</button>
@@ -647,6 +657,10 @@
         <li>Eingaben werden <b>automatisch zwischengespeichert</b> – nichts geht bei einem Reload verloren.</li>
       </ul>
     </details>
+    <div class="skala-banner no-print" id="skalaBanner">
+      <span>ℹ️ <b>Zur Bewertungsskala:</b> Stufe 1 ist der Basiswert – sie trifft ohne Nachweise auf jede Organisation zu. Jedes belegbar erfüllte Kriterium hebt die Frage um eine Stufe: alle 4 erfüllt = Stufe 5.</span>
+      <button type="button" class="btn-mini" onclick="dismissSkalaBanner()">Verstanden</button>
+    </div>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <div class="progress-text" id="progressText">0 / 24 Fragen beantwortet</div>
@@ -695,14 +709,15 @@
   <div class="intro-card">
     <h2>So funktioniert das Assessment</h2>
     <p class="intro-sub">Strukturiert die KI-Reife eines Unternehmens erheben – und daraus fundierte nächste Schritte ableiten.</p>
-    <div class="intro-meta">
+    <details class="intro-meta">
+      <summary>Wozu dieses Tool · für wen · was es besonders macht</summary>
       <div><b>Wozu?</b> Standortbestimmung der KI-Reife über 6 Dimensionen und 5 Stufen – als belastbare Grundlage für Change-Vorhaben rund um KI-Einführung.</div>
       <div><b>Für wen?</b> Change Manager:innen und Consultants, die KI-Einführungen begleiten – im Kundenworkshop, im Interview oder in der Nachbereitung.</div>
       <div><b>Was es besonders macht:</b> Bewertet wird über belegbare Kriterien statt Bauchgefühl – und jede Handlungsempfehlung ist wissenschaftlich zitiert (Meta-Analysen, NIST, Gartner), rechtlich verankert (EU AI Act, BetrVG) und an die Branche angepasst. Vollständig lokal im Browser, keine Datenübertragung.</div>
       <div><b>Im adesso-Vorgehen:</b> Etappe 2 („Verstehen“) der vier Etappen der KI-Strategie – Management-Befähigung → <b>KI-Reifegrad</b> → Use Case Backlog → KI Target Operating Model.</div>
-    </div>
+    </details>
     <div class="intro-step"><div class="num">1</div><p><b>Angaben:</b> Kunde, Branche und Kontext erfassen. Die Branche steuert regulatorische Hinweise im Report.</p></div>
-    <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch (Skala 1–5: Stufe 1 = Basiswert ohne Nachweise, jedes erfüllte Kriterium hebt um eine Stufe) und lässt sich per Slider übersteuern. Beobachtungen als Freitext festhalten.</p></div>
+    <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch, übersteuerbar per Slider.</p></div>
     <div class="intro-step"><div class="num">3</div><p><b>Auswertung:</b> Report mit Gesamt-Reifegrad, Top-3-Maßnahmen, Quellen und rechtlichem Rahmen. Umschaltbar: Consultant-Ansicht (mit Methodik) ↔ Kunden-Ansicht (präsentationsfertig).</p></div>
     <div class="intro-note">💾 Eingaben werden automatisch im Browser zwischengespeichert; „Speichern (JSON)“ sichert bewusst als Datei.<br>⚠️ Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das Unternehmen anpassen.</div>
     <div class="intro-actions"><button type="button" class="btn btn-primary" onclick="closeIntro()">Los geht’s</button></div>
@@ -777,6 +792,8 @@ const SOURCES = {
                     ref:"Schutz vor ausschließlich automatisierten Entscheidungen; Datenschutz-Folgenabschätzung verpflichtend bei systematischem Profiling."},
   "betrvg":        {label:"BetrVG §§ 87, 90, 80, 95", type:"recht",
                     ref:"§ 87 Abs. 1 Nr. 6: erzwingbare Mitbestimmung (BAG: objektive Überwachungseignung genügt – nahezu jeder KI-Einsatz); § 90: frühzeitige Beratung; § 80 Abs. 3: Sachverständiger bei KI stets erforderlich."},
+  "dora":          {label:"DORA (VO (EU) 2022/2554)", type:"recht",
+                    ref:"Digital Operational Resilience Act – voll anwendbar seit 17.01.2025; behandelt KI-Anbieter als IKT-Drittdienstleister. Sektorspezifisch für Banken, Finanzdienstleister und Versicherungen."},
   /* adesso-Vorgehensmodell */
   "adesso-tom":    {label:"adesso Target Operating Model", type:"adesso",
                     ref:"adesso-Vorgehensmodell: KI-Treiber (Vision, Use Cases) × KI-Enabler (Organisation, Daten, Enablement, Technologie) ≫ KI-Value; Governance als Fundament. Die Dimensionen wirken als Multiplikatoren – fällt eine auf null, ist das Gesamtergebnis null. Vier Etappen: Management-Befähigung → KI-Reifegrad → Use Case Backlog → KI-TOM."}
@@ -798,10 +815,12 @@ const LEGAL_BASELINE = {
 const BRANCHEN_PROFILE = {
   "Versicherungen":{regulierung:"hoch",
     hinweis:"Risikobewertung/Tarifierung in Leben/Kranken = Hochrisiko (Annex III Nr. 5c AI Act). EIOPA-Governance-Prinzipien (2021) und BaFin-BDAI-Aufsicht beachten.",
-    daten:"Gute strukturierte Bestandsdaten, aber Bias-Risiken bei nicht repräsentativen Trainingsdaten."},
+    daten:"Gute strukturierte Bestandsdaten, aber Bias-Risiken bei nicht repräsentativen Trainingsdaten.",
+    sources:["ai-act-risiko","dora"]},
   "Banken & Finanzdienstleistungen":{regulierung:"hoch",
     hinweis:"Kreditscoring natürlicher Personen = Hochrisiko (Annex III Nr. 5b; Betrugserkennung ausgenommen). Zusätzlich DORA (seit 01/2025), MiFID II, EZB-Modellrisiko-Guidance.",
-    daten:"Datenreich, aber Profiling (Art. 4 Nr. 4 DSGVO) macht die meisten Retail-Scoring-Systeme unweigerlich hochrisiko."},
+    daten:"Datenreich, aber Profiling (Art. 4 Nr. 4 DSGVO) macht die meisten Retail-Scoring-Systeme unweigerlich hochrisiko.",
+    sources:["ai-act-risiko","dora"]},
   "Öffentlicher Sektor":{regulierung:"hoch",
     hinweis:"Grundrechte-Folgenabschätzung (Art. 27 AI Act) vor Inbetriebnahme von Hochrisiko-Systemen verpflichtend; Vergaberecht und Transparenzpflichten beachten.",
     daten:"Fragmentierte Datenlandschaft, Silostrukturen."},
@@ -824,7 +843,7 @@ const BRANCHEN_PROFILE = {
 
 function srcChipsHtml(keys){
   if(!keys || !keys.length) return "";
-  return `<span class="src-row">`+keys.map(k=>{
+  return `<span class="src-row"><span class="src-label">Quellen:</span>`+keys.map(k=>{
     const s = SOURCES[k];
     return s ? `<span class="src-chip ${s.type}" title="${esc(s.ref)}">${esc(s.label)}</span>` : "";
   }).join("")+`</span>`;
@@ -844,7 +863,7 @@ function legalBoxHtml(stage){
       <span class="stufe-dot">Stufe ${e.stufe}</span>
       <div>${e.item.text} ${srcChipsHtml(e.item.sources)}</div>
     </div>`).join("")}
-    <div class="hint" style="margin-top:10px;">Rechtsstand: Juli 2026 · Angaben ohne Gewähr – Fristen können sich ändern (z. B. Digital-Omnibus-Paket); bei rechtlichen Entscheidungen Rechtsabteilung/Fachbereich einbinden.</div>
+    <div class="hint" style="margin-top:10px;">Rechtsstand: Juli 2026 · Angaben ohne Gewähr – Fristen können sich ändern (z. B. Digital-Omnibus-Paket); bei rechtlichen Entscheidungen Rechtsabteilung/Fachbereich einbinden. Sektorspezifische Regime (z. B. DORA für Banken/Versicherungen) erscheinen im Branchenkontext, sobald eine Branche gewählt ist.</div>
   </div>`;
 }
 function brancheBoxHtml(){
@@ -856,6 +875,7 @@ function brancheBoxHtml(){
     <h4>Branchenkontext: ${esc(state.meta.branche)}<span class="reg-badge ${regClass}">Regulierungsdichte: ${p.regulierung}</span></h4>
     <p>${p.hinweis}</p>
     <p><b>Typische Datenlage:</b> ${p.daten}</p>
+    ${srcChipsHtml(p.sources)}
   </div>`;
 }
 
@@ -1576,6 +1596,7 @@ function renderErhebung(){
           <div class="freitext-block">
             <label>Beobachtungen aus Interviews/Workshops zu „${dim.name}“ (optional)</label>
             <textarea data-dimnote="${dim.id}" placeholder="Freitext-Notizen ...">${state.dimNotes[dim.id]||""}</textarea>
+            ${!state.agent.enabled ? `<span class="hint">Tipp: Mit Agent-Verbindung (Schritt 1) werden Beobachtungen automatisch gegen die Kriterien geprüft und fließen so in die Bewertung ein.</span>` : ""}
             ${state.agent.enabled ? `
             <div class="agent-row no-print">
               <button type="button" class="btn-agent" id="agent-btn-${dim.id}" onclick="agentAnalyzeDim('${dim.id}')">🤖 Agent: Notizen analysieren</button>
@@ -2012,7 +2033,7 @@ function renderConsultantView(R){
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${d.avg/5*100}%;background:${s.hex}"></div></div>
       <div class="dim-result-score">Score: ${fmt1(d.avg)} / 5</div>
-      <div class="qbreak">${qBreak}</div>
+      <div class="qbreak-box"><div class="qbreak-title">Auswertungsgrundlage – Ihre Bewertungen je Frage</div><div class="qbreak">${qBreak}</div></div>
       ${notesHtml}
       ${tagsHtml}
       ${(d.stage < 5 && d.dim.transitions && d.dim.transitions[d.stage]) ? `<div class="rec-transition">🚧 <b>Richtung Stufe ${d.stage+1}:</b> ${d.dim.transitions[d.stage]}</div>` : ""}
@@ -2473,6 +2494,14 @@ document.getElementById("themeSwitch").addEventListener("click",(e)=>{
     if(mq.addEventListener){ mq.addEventListener("change", onChange); }
   }
 })();
+
+/* Skala-Hinweis-Banner: einmalig anzeigen, bis bestätigt */
+const SKALA_KEY = "ki-reifegrad-skala-ok";
+function dismissSkalaBanner(){
+  document.getElementById("skalaBanner").style.display = "none";
+  try{ localStorage.setItem(SKALA_KEY, "1"); }catch(e){}
+}
+try{ if(!localStorage.getItem(SKALA_KEY)){ document.getElementById("skalaBanner").style.display = "flex"; } }catch(e){}
 
 /* Kurzanleitung: beim ersten Besuch automatisch, danach über ❓-Button */
 const INTRO_KEY = "ki-reifegrad-intro-seen-v1";
