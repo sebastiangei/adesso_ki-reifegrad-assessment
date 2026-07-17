@@ -381,6 +381,29 @@
   .step-help ul{margin:8px 0 4px;padding-left:18px;}
   .step-help li{margin:4px 0;line-height:1.5;}
 
+  /* ---------- Maßnahmenplan-Agent ---------- */
+  .plan-box{padding:20px;margin-bottom:20px;}
+  .plan-box h3{margin:0 0 4px;font-size:15px;}
+  .plan-agent-note{font-size:10.5px;font-weight:800;color:#fff;background:var(--brand-purple);padding:3px 9px;border-radius:999px;margin-left:8px;vertical-align:middle;white-space:nowrap;}
+  .plan-sub{margin:0 0 14px;font-size:12.5px;color:var(--ink-faint);}
+  .plan-steps{display:flex;flex-direction:column;gap:6px;}
+  .plan-step{font-size:13px;color:var(--ink-faint);}
+  .plan-step.run{color:var(--brand-purple);font-weight:700;}
+  .plan-step.done{color:var(--teal-dark);}
+  .plan-praemisse{font-size:13px;color:var(--ink-soft);font-style:italic;margin:0 0 12px;}
+  .plan-edit{outline:none;}
+  .plan-edit:focus{outline:1px dashed var(--border);outline-offset:4px;}
+  .plan-phase{margin-bottom:14px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
+  .plan-phase h4{margin:0 0 8px;font-size:13.5px;color:var(--brand-primary);}
+  .plan-item{padding:8px 0;border-top:1px dashed var(--border);font-size:13px;}
+  .plan-item p{margin:4px 0;color:var(--ink-soft);}
+  .plan-dim{font-size:11px;color:var(--ink-faint);font-weight:700;}
+  .plan-meta{font-size:11.5px;color:var(--ink-faint);}
+  .plan-hinweise{font-size:12px;color:var(--ink-soft);margin-top:6px;}
+  .plan-kritik{margin-top:12px;font-size:12.5px;}
+  .plan-kritik summary{cursor:pointer;font-weight:700;color:var(--purple-dark);}
+  .plan-kritik p{color:var(--ink-soft);}
+
   /* ---------- Persistenz-Leiste ---------- */
   .persist-bar{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;flex-wrap:wrap;}
   .btn-mini{
@@ -1279,7 +1302,8 @@ const state = {
   agentEvidence:{},  // qid -> {idx: evidenceText}
   agentStatus:{},    // dimId -> {type:'pending'|'ok'|'error', text:string}
   agentCopilot:{},   // dimId -> {question, rationale, status}
-  agentSummary:{consultant:null, kunde:null} // {text,status,error}
+  agentSummary:{consultant:null, kunde:null}, // {text,status,error}
+  agentPlan:null // {status:'running'|'ok'|'error', step, steps[], plan, kritik, error}
 };
 DIMENSIONS.forEach((d,i)=>{
   state.dimOpen[d.id] = (i===0);
@@ -1825,6 +1849,132 @@ async function agentGenerateSummary(viewMode){
   }
 }
 
+/* =========================================================================
+   MASSNAHMENPLAN-AGENT: vierstufige agentische Kette
+   Analyse -> Komposition -> Selbstkritik -> Revision (übersprungen bei
+   mängelfreier Kritik). Fachliche Freigabe bleibt beim Consultant.
+   ========================================================================= */
+const PLAN_SYS_ANALYSE = "Du bist erfahrene:r Change-Management-Berater:in. Analysiere die Assessment-Ergebnisse: Was ist der kritische Engpass? Welche Abhängigkeiten bestehen zwischen den Dimensionen? Welche Reihenfolge-Logik ergibt sich für die nächsten 90 Tage? Nutze AUSSCHLIESSLICH die gelieferten Daten, erfinde nichts. Antworte in 5–8 nüchternen Sätzen auf Deutsch, ohne Überschriften.";
+const PLAN_SYS_KOMPOSITION = "Du bist erfahrene:r Change-Management-Berater:in und erstellst einen 90-Tage-Maßnahmenplan. STRIKTE REGELN: (1) Baue NUR auf den mitgelieferten Empfehlungen und rechtlichen Pflichten auf – konkretisieren und terminieren ist erwünscht, neue Themen erfinden ist verboten. (2) Rechtliche Pflichten und der Engpass gehören früh in den Plan. (3) Maximal 3 Maßnahmen je Phase – lieber weglassen als überladen. Antworte AUSSCHLIESSLICH mit validem JSON (kein Markdown-Codeblock, kein Text davor/danach) nach diesem Schema: {\"praemisse\":\"1 Satz Ausgangslage\",\"phasen\":[{\"zeitraum\":\"Tage 1–30\",\"fokus\":\"...\",\"massnahmen\":[{\"titel\":\"...\",\"dimension\":\"...\",\"beschreibung\":\"2–3 Sätze konkret\",\"verantwortung\":\"Rolle, kein Name\",\"erfolgskriterium\":\"messbar\"}]},{\"zeitraum\":\"Tage 31–60\",\"fokus\":\"...\",\"massnahmen\":[]},{\"zeitraum\":\"Tage 61–90\",\"fokus\":\"...\",\"massnahmen\":[]}],\"hinweise\":[\"...\"]}";
+const PLAN_SYS_KRITIK = "Du bist kritische:r Reviewer:in für Change-Maßnahmenpläne. Prüfe den Plan gegen diese Checkliste: (1) Wird der Engpass zuerst adressiert? (2) Stehen rechtliche Pflichten (KI-Kompetenz Art. 4 AI Act, Betriebsrat/§ 87 BetrVG) früh genug? (3) Passt der Plan zur Branche? (4) Ist er überladen (mehr als 9 Maßnahmen) oder unrealistisch dicht? (5) Verletzt die Reihenfolge Abhängigkeiten? (6) Sind die Erfolgskriterien messbar? Antworte auf Deutsch als knappe Mängelliste (je Mangel eine Zeile, beginnend mit '- '), oder exakt 'Keine wesentlichen Mängel.' wenn nichts zu beanstanden ist. KEINE Lobeshymnen.";
+const PLAN_SYS_REVISION = "Du bist erfahrene:r Change-Management-Berater:in. Überarbeite den Maßnahmenplan so, dass alle genannten Mängel behoben sind. Behalte bewährte Teile unverändert bei. Antworte AUSSCHLIESSLICH mit validem JSON im exakt gleichen Schema wie der gelieferte Plan (kein Markdown, kein Text drumherum).";
+
+function buildPlanDataBlock(R){
+  const minDim = R.dims.reduce((a,b)=>(b.avg<a.avg?b:a), R.dims[0]);
+  let s = `Kunde: ${state.meta.kunde||"n/a"} | Fachbereich: ${state.meta.bereich||"n/a"} | Branche: ${state.meta.branche||"n/a"}\n`;
+  s += `Gesamt: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n`;
+  s += `Schwächste Dimension (Engpass-Kandidat): ${minDim.dim.name} (Stufe ${minDim.stage})\n\n`;
+  s += "DIMENSIONEN MIT EMPFEHLUNGEN DER JEWEILS AKTUELLEN STUFE:\n";
+  R.dims.forEach(d=>{
+    s += `\n${d.dim.name} – Stufe ${d.stage} (Score ${fmt1(d.avg)})${d.note?` – Beobachtung: ${d.note}`:""}\n`;
+    (d.dim.recommendations[d.stage]||[]).forEach(r=>{ s += `  • ${r.text}\n`; });
+    if(d.stage<5 && d.dim.transitions && d.dim.transitions[d.stage]){ s += `  Übergang zu Stufe ${d.stage+1}: ${d.dim.transitions[d.stage]}\n`; }
+  });
+  const legal = [];
+  for(let l=1;l<=R.overallStage;l++){ (LEGAL_BASELINE[l]||[]).forEach(it=>legal.push(it.text)); }
+  if(legal.length){ s += `\nRECHTLICHE PFLICHTEN (kumulativ bis Stufe ${R.overallStage}):\n${legal.map(t=>"  • "+t).join("\n")}\n`; }
+  const bp = BRANCHEN_PROFILE[(state.meta.branche||"").trim()];
+  if(bp){ s += `\nBRANCHENKONTEXT (${state.meta.branche}): ${bp.hinweis} Datenlage: ${bp.daten}\n`; }
+  if(state.globalNotes){ s += `\nGLOBALE BEOBACHTUNGEN: ${state.globalNotes}\n`; }
+  return s;
+}
+function parsePlanJson(raw){
+  const cleaned = raw.trim().replace(/^```json\s*/i,"").replace(/^```\s*/,"").replace(/```\s*$/,"");
+  const plan = JSON.parse(cleaned);
+  if(!plan || !Array.isArray(plan.phasen) || !plan.phasen.length){ throw new Error("Plan-Format unerwartet (keine Phasen erhalten)."); }
+  return plan;
+}
+function setPlanStep(n){
+  state.agentPlan.step = n;
+  renderReport();
+}
+async function agentGenerateMassnahmenplan(){
+  if(!state.agent.enabled){ alert("Bitte zuerst in Schritt 1 „Angaben“ die Agent-Verbindung aktivieren („Verbindung testen“)."); return; }
+  const R = computeResults();
+  state.agentPlan = {status:"running", step:0,
+    steps:["Ergebnisse analysieren","Plan komponieren","Selbstkritik","Überarbeiten"],
+    plan:null, kritik:null, error:null};
+  try{
+    const daten = buildPlanDataBlock(R);
+    setPlanStep(1);
+    const analyse = await callAgent(PLAN_SYS_ANALYSE, daten, 700);
+    setPlanStep(2);
+    const planRaw = await callAgent(PLAN_SYS_KOMPOSITION, daten+"\n\nVORAB-ANALYSE:\n"+analyse, 2000);
+    let plan = parsePlanJson(planRaw);
+    setPlanStep(3);
+    const kritik = await callAgent(PLAN_SYS_KRITIK, daten+"\n\nPLAN:\n"+JSON.stringify(plan), 700);
+    if(!/keine wesentlichen mängel/i.test(kritik)){
+      setPlanStep(4);
+      const finalRaw = await callAgent(PLAN_SYS_REVISION, daten+"\n\nPLAN:\n"+JSON.stringify(plan)+"\n\nFESTGESTELLTE MÄNGEL:\n"+kritik, 2000);
+      plan = parsePlanJson(finalRaw);
+      state.agentPlan = {status:"ok", plan, kritik, revidiert:true};
+    } else {
+      state.agentPlan = {status:"ok", plan, kritik, revidiert:false};
+    }
+    scheduleAutosave();
+  }catch(err){
+    state.agentPlan = {status:"error", error: err.message, steps: state.agentPlan.steps, step: state.agentPlan.step};
+  }finally{
+    renderReport();
+  }
+}
+function copyPlanText(){
+  const el = document.querySelector(".plan-edit");
+  if(!el) return;
+  const text = "90-TAGE-MASSNAHMENPLAN (KI-generierter Entwurf)\n\n"+el.innerText.trim()+
+    "\n\nHinweis: Evidenzgestützter Ausgangspunkt – kritisch prüfen und an den Unternehmenskontext anpassen.";
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>alert("Maßnahmenplan wurde kopiert.")).catch(()=>fallbackCopy(text));
+  } else { fallbackCopy(text); }
+}
+function planBoxHtml(R){
+  const p = state.agentPlan;
+  let inner = "";
+  if(!state.agent.enabled && (!p || p.status!=="ok")){
+    inner = `<p class="agent-warning" style="margin:0;">Für den Maßnahmenplan-Agenten in Schritt 1 „Angaben“ die Agent-Verbindung aktivieren („Verbindung testen“). Ohne Agent stehen die Top-3-Empfehlungen und die Bibliothek als manuelle Grundlage bereit.</p>`;
+  } else if(!p){
+    inner = `<button type="button" class="btn-agent no-print" onclick="agentGenerateMassnahmenplan()">🤖 90-Tage-Maßnahmenplan erstellen</button>`;
+  } else if(p.status==="running"){
+    inner = `<div class="plan-steps">${p.steps.map((s,i)=>{
+      const st = (i+1)<p.step ? "done" : ((i+1)===p.step ? "run" : "wait");
+      const icon = st==="done" ? "✓" : (st==="run" ? "⏳" : "·");
+      return `<div class="plan-step ${st}">${icon} Schritt ${i+1}/4: ${esc(s)}</div>`;
+    }).join("")}</div>`;
+  } else if(p.status==="error"){
+    inner = `<span class="agent-status error">✗ Fehler: ${esc(p.error||"unbekannt")}</span>
+      <div class="no-print" style="margin-top:8px;"><button type="button" class="btn-agent" onclick="agentGenerateMassnahmenplan()">Erneut versuchen</button></div>`;
+  } else if(p.status==="ok" && p.plan){
+    const plan = p.plan;
+    inner = `
+      <span class="agent-tag">🤖 KI-generierter Entwurf – prüfen &amp; anpassen (direkt im Text editierbar)</span>
+      ${plan.praemisse ? `<p class="plan-praemisse">${esc(plan.praemisse)}</p>` : ""}
+      <div class="plan-edit" contenteditable="true" spellcheck="false">
+        ${(plan.phasen||[]).map(ph=>`
+        <div class="plan-phase">
+          <h4>${esc(ph.zeitraum||"")}${ph.fokus ? " · "+esc(ph.fokus) : ""}</h4>
+          ${(ph.massnahmen||[]).map(m=>`
+          <div class="plan-item">
+            <b>${esc(m.titel||"")}</b> <span class="plan-dim">[${esc(m.dimension||"")}]</span>
+            <p>${esc(m.beschreibung||"")}</p>
+            <div class="plan-meta">Verantwortung: ${esc(m.verantwortung||"–")} · Erfolgskriterium: ${esc(m.erfolgskriterium||"–")}</div>
+          </div>`).join("")}
+        </div>`).join("")}
+        ${(plan.hinweise && plan.hinweise.length) ? `<div class="plan-hinweise"><b>Hinweise des Agenten:</b> ${plan.hinweise.map(h=>esc(h)).join(" · ")}</div>` : ""}
+      </div>
+      ${p.kritik ? `<details class="plan-kritik"><summary>🔍 Selbstkritik des Agenten (Schritt 3${p.revidiert ? " – Plan wurde daraufhin überarbeitet" : " – keine Überarbeitung nötig"})</summary><p>${esc(p.kritik).replace(/\n/g,"<br>")}</p></details>` : ""}
+      <div class="btn-row no-print" style="margin-top:12px;">
+        <button type="button" class="btn-agent" onclick="agentGenerateMassnahmenplan()">Neu generieren</button>
+        <button type="button" class="btn-agent" onclick="copyPlanText()">📋 Plan kopieren</button>
+      </div>`;
+  }
+  return `
+  <div class="card plan-box">
+    <h3>🗺️ 90-Tage-Maßnahmenplan <span class="plan-agent-note">agentisch: Analyse → Komposition → Selbstkritik → Revision</span></h3>
+    <p class="plan-sub">Der Agent komponiert aus den Handlungsempfehlungen, dem Branchenprofil und den rechtlichen Pflichten einen priorisierten Entwurf – die fachliche Prüfung und Freigabe bleibt beim Consultant.</p>
+    ${inner}
+  </div>`;
+}
+
 function renderConsultantView(R){
   const {dims, overallAvg, overallStage, top3} = R;
   const os = stageInfo(overallStage);
@@ -1927,6 +2077,8 @@ function renderConsultantView(R){
         ${top3Html}
       </div>
     </div>
+
+    ${planBoxHtml(R)}
 
     ${legalBoxHtml(overallStage)}
 
@@ -2201,7 +2353,8 @@ function serializeState(){
     meta:state.meta, answers:state.answers, criteria:state.criteria,
     overridden:[...state.overridden], answered:[...state.answered],
     dimNotes:state.dimNotes, globalNotes:state.globalNotes,
-    agentEvidence:state.agentEvidence
+    agentEvidence:state.agentEvidence,
+    agentPlan:(state.agentPlan && state.agentPlan.status==="ok") ? {status:"ok", plan:state.agentPlan.plan, kritik:state.agentPlan.kritik||null, revidiert:!!state.agentPlan.revidiert} : null
     /* bewusst NICHT enthalten: state.agent (API-Keys/Tokens) */
   };
 }
@@ -2219,6 +2372,7 @@ function applySnapshot(snap){
   state.dimNotes = snap.dimNotes || {};
   state.globalNotes = snap.globalNotes || "";
   state.agentEvidence = snap.agentEvidence || {};
+  state.agentPlan = (snap.agentPlan && snap.agentPlan.status==="ok" && snap.agentPlan.plan) ? snap.agentPlan : null;
   syncMetaFields();
   renderErhebung();
   if(state.step==="auswertung"){ renderReport(); }
