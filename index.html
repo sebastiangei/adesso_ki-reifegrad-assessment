@@ -395,8 +395,18 @@
   .plan-edit:focus{outline:1px dashed var(--border);outline-offset:4px;}
   .plan-phase{margin-bottom:14px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
   .plan-phase h4{margin:0 0 8px;font-size:13.5px;color:var(--brand-primary);}
-  .plan-item{padding:8px 0;border-top:1px dashed var(--border);font-size:13px;}
+  .plan-item{display:flex;gap:9px;align-items:flex-start;padding:8px 0;border-top:1px dashed var(--border);font-size:13px;}
   .plan-item p{margin:4px 0;color:var(--ink-soft);}
+  .plan-check{flex-shrink:0;padding-top:2px;}
+  .plan-check input{width:15px;height:15px;accent-color:var(--teal-dark);cursor:pointer;}
+  .plan-item-body{flex:1;outline:none;}
+  .plan-item-body:focus{outline:1px dashed var(--border);outline-offset:3px;}
+  .plan-done .plan-item-body{opacity:.55;}
+  .plan-done .plan-item-body b{text-decoration:line-through;}
+  .dim-recs{margin-top:10px;font-size:12.5px;}
+  .dim-recs summary{cursor:pointer;font-weight:700;color:var(--brand-primary);font-size:12.5px;user-select:none;}
+  .dim-rec{padding:8px 0;border-top:1px dashed var(--border);}
+  .dim-rec p{margin:0 0 2px;font-size:13px;}
   .plan-dim{font-size:11px;color:var(--ink-faint);font-weight:700;}
   .plan-meta{font-size:11.5px;color:var(--ink-faint);}
   .plan-hinweise{font-size:12px;color:var(--ink-soft);margin-top:6px;}
@@ -565,6 +575,16 @@
         <div class="field">
           <label>Datum der Erhebung</label>
           <input type="date" id="metaDatum">
+        </div>
+        <div class="field">
+          <label>KI-Einsatz für diesen Projektkontext freigegeben?</label>
+          <select id="metaFreigabe">
+            <option value="">– nicht erfasst –</option>
+            <option value="ja">Ja, freigegeben</option>
+            <option value="offen">In Klärung</option>
+            <option value="nein">Nein / nicht freigegeben</option>
+          </select>
+          <span class="hint">Kontext-Angabe für den Report – fließt nicht in den Reifegrad-Score ein.</span>
         </div>
         <div class="field full">
           <label>Projektkontext (optional, intern)</label>
@@ -1185,11 +1205,11 @@ const DIMENSIONS = [
                  "Es existiert eine Betriebsvereinbarung oder vergleichbare Regelung zu KI.",
                  "Der Betriebsrat ist regelhaft in neue KI-Vorhaben eingebunden (nicht nur einmalig)."]},
       {id:"stakeholder_4", text:"Der Nutzen von KI wird für Mitarbeitende konkret erlebbar gemacht.",
-       low:"Abstrakte Versprechen ohne erlebbaren Nutzen.", high:"Konkrete Erfolgsgeschichten/Quick-Wins sichtbar.",
+       low:"Abstrakte Versprechen ohne erlebbaren Nutzen.", high:"Nutzen belegt erlebbar; auch negative Erfahrungen werden offen aufgearbeitet.",
        criteria:["Es gibt mindestens eine konkrete Erfolgsgeschichte, die kommuniziert wurde.",
                  "Der Nutzen ist mit einer Zahl/einem Beispiel belegt (z. B. Zeitersparnis).",
                  "Mehrere Erfolgsgeschichten aus unterschiedlichen Teams sind bekannt.",
-                 "Mitarbeitende berichten von sich aus (ungefragt) über erlebten Nutzen."]}
+                 "Auch negative KI-Erfahrungen werden systematisch erfasst und offen aufgearbeitet – nicht nur Erfolge kommuniziert."]}
     ],
     recommendations:{
       1:[{text:"Eine erste Town-Hall/Info-Mail ansetzen, die Ziel und Zeitplan der KI-Initiative transparent macht.",
@@ -1312,7 +1332,7 @@ const state = {
   overridden:new Set(), // qids, bei denen die Bewertung manuell vom Vorschlag abweicht
   answered:new Set(),
   dimNotes:{},     // dimId -> text
-  meta:{kunde:"",bereich:"",branche:"",consultant:"",datum:"",kontext:""},
+  meta:{kunde:"",bereich:"",branche:"",consultant:"",datum:"",kontext:"",freigabe:""},
   globalNotes:"",
   dimOpen:{},
   agent:{
@@ -1769,9 +1789,9 @@ function updateProgress(){
 }
 
 /* Meta fields binding */
-["metaKunde","metaBereich","metaBranche","metaConsultant","metaDatum","metaKontext"].forEach(id=>{
+["metaKunde","metaBereich","metaBranche","metaConsultant","metaDatum","metaKontext","metaFreigabe"].forEach(id=>{
   document.getElementById(id).addEventListener("input",(e)=>{
-    const map={metaKunde:"kunde",metaBereich:"bereich",metaBranche:"branche",metaConsultant:"consultant",metaDatum:"datum",metaKontext:"kontext"};
+    const map={metaKunde:"kunde",metaBereich:"bereich",metaBranche:"branche",metaConsultant:"consultant",metaDatum:"datum",metaKontext:"kontext",metaFreigabe:"freigabe"};
     state.meta[map[id]] = e.target.value;
   });
 });
@@ -1802,8 +1822,9 @@ function computeResults(){
 
 function renderReport(){
   const R = computeResults();
+  const freigabeLabel = {ja:"✓ erteilt", offen:"in Klärung", nein:"✗ nicht erteilt"}[state.meta.freigabe] || "";
   document.getElementById("reportMetaLine").innerHTML =
-    `<b>${esc(state.meta.kunde)||"Kunde n. a."}</b> · ${esc(state.meta.bereich)||"Fachbereich n. a."}${state.meta.branche?" · Branche: "+esc(state.meta.branche):""} · Consultant: ${esc(state.meta.consultant)||"–"} · ${esc(state.meta.datum)}`;
+    `<b>${esc(state.meta.kunde)||"Kunde n. a."}</b> · ${esc(state.meta.bereich)||"Fachbereich n. a."}${state.meta.branche?" · Branche: "+esc(state.meta.branche):""} · Consultant: ${esc(state.meta.consultant)||"–"} · ${esc(state.meta.datum)}${freigabeLabel?" · KI-Freigabe: "+freigabeLabel:""}`;
 
   const root = document.getElementById("reportRoot");
   root.innerHTML = renderConsultantView(R) + renderKundeView(R);
@@ -1939,6 +1960,18 @@ async function agentGenerateMassnahmenplan(){
     renderReport();
   }
 }
+function togglePlanDone(key, checked){
+  if(!state.agentPlan || state.agentPlan.status!=="ok") return;
+  if(!state.agentPlan.done) state.agentPlan.done = {};
+  state.agentPlan.done[key] = checked;
+  const item = document.querySelector(`.plan-item[data-key="${key}"]`);
+  if(item) item.classList.toggle("plan-done", checked);
+  const totalM = (state.agentPlan.plan.phasen||[]).reduce((n,ph)=>n+(ph.massnahmen||[]).length,0);
+  const doneM = Object.values(state.agentPlan.done).filter(Boolean).length;
+  const prog = document.getElementById("planProgress");
+  if(prog) prog.textContent = doneM+" von "+totalM+" Maßnahmen erledigt";
+  scheduleAutosave();
+}
 function copyPlanText(){
   const el = document.querySelector(".plan-edit");
   if(!el) return;
@@ -1966,19 +1999,28 @@ function planBoxHtml(R){
       <div class="no-print" style="margin-top:8px;"><button type="button" class="btn-agent" onclick="agentGenerateMassnahmenplan()">Erneut versuchen</button></div>`;
   } else if(p.status==="ok" && p.plan){
     const plan = p.plan;
+    const totalM = (plan.phasen||[]).reduce((n,ph)=>n+(ph.massnahmen||[]).length,0);
+    const doneM = Object.values(p.done||{}).filter(Boolean).length;
     inner = `
-      <span class="agent-tag">🤖 KI-generierter Entwurf – prüfen &amp; anpassen (direkt im Text editierbar)</span>
+      <span class="agent-tag">🤖 KI-generierter Entwurf – prüfen &amp; anpassen (Text direkt editierbar)</span>
+      <span class="hint" id="planProgress" style="margin-left:8px;">${doneM} von ${totalM} Maßnahmen erledigt</span>
       ${plan.praemisse ? `<p class="plan-praemisse">${esc(plan.praemisse)}</p>` : ""}
-      <div class="plan-edit" contenteditable="true" spellcheck="false">
-        ${(plan.phasen||[]).map(ph=>`
+      <div class="plan-edit">
+        ${(plan.phasen||[]).map((ph,pi)=>`
         <div class="plan-phase">
           <h4>${esc(ph.zeitraum||"")}${ph.fokus ? " · "+esc(ph.fokus) : ""}</h4>
-          ${(ph.massnahmen||[]).map(m=>`
-          <div class="plan-item">
-            <b>${esc(m.titel||"")}</b> <span class="plan-dim">[${esc(m.dimension||"")}]</span>
-            <p>${esc(m.beschreibung||"")}</p>
-            <div class="plan-meta">Verantwortung: ${esc(m.verantwortung||"–")} · Erfolgskriterium: ${esc(m.erfolgskriterium||"–")}</div>
-          </div>`).join("")}
+          ${(ph.massnahmen||[]).map((m,mi)=>{
+            const key = pi+"-"+mi;
+            const done = !!(p.done && p.done[key]);
+            return `
+          <div class="plan-item ${done?'plan-done':''}" data-key="${key}">
+            <label class="plan-check no-print"><input type="checkbox" ${done?'checked':''} onchange="togglePlanDone('${key}', this.checked)" title="Maßnahme als erledigt markieren"></label>
+            <div class="plan-item-body" contenteditable="true" spellcheck="false">
+              <b>${esc(m.titel||"")}</b> <span class="plan-dim">[${esc(m.dimension||"")}]</span>
+              <p>${esc(m.beschreibung||"")}</p>
+              <div class="plan-meta">Verantwortung: ${esc(m.verantwortung||"–")} · Erfolgskriterium: ${esc(m.erfolgskriterium||"–")}</div>
+            </div>
+          </div>`;}).join("")}
         </div>`).join("")}
         ${(plan.hinweise && plan.hinweise.length) ? `<div class="plan-hinweise"><b>Hinweise des Agenten:</b> ${plan.hinweise.map(h=>esc(h)).join(" · ")}</div>` : ""}
       </div>
@@ -2036,6 +2078,15 @@ function renderConsultantView(R){
       <div class="qbreak-box"><div class="qbreak-title">Auswertungsgrundlage – Ihre Bewertungen je Frage</div><div class="qbreak">${qBreak}</div></div>
       ${notesHtml}
       ${tagsHtml}
+      <details class="dim-recs">
+        <summary>Handlungsempfehlungen für Stufe ${d.stage} anzeigen (${(d.dim.recommendations[d.stage]||[]).length})</summary>
+        ${(d.dim.recommendations[d.stage]||[]).map(r=>`
+        <div class="dim-rec">
+          <p>${r.text}</p>
+          ${r.begruendung ? `<div class="rec-begruendung">${r.begruendung}</div>` : ""}
+          ${srcChipsHtml(r.sources)}
+        </div>`).join("")}
+      </details>
       ${(d.stage < 5 && d.dim.transitions && d.dim.transitions[d.stage]) ? `<div class="rec-transition">🚧 <b>Richtung Stufe ${d.stage+1}:</b> ${d.dim.transitions[d.stage]}</div>` : ""}
     </div>`;
   }).join("");
@@ -2144,6 +2195,19 @@ function renderConsultantView(R){
           Details und vollständige Quellenliste: <code>docs/methodik-fundament.md</code> im Repository.
         </p>
       </div>
+    </details>
+
+    <details class="card accordion-lib">
+      <summary>Fragenkatalog &amp; Kriterien (Referenz)</summary>
+      ${DIMENSIONS.map(dim=>`
+      <div class="lib-dim">
+        <h5>${dim.name}</h5>
+        ${dim.questions.map(q=>`
+        <div class="lib-stage-row">
+          <div class="lib-stage-name">${q.text}</div>
+          <div class="lib-stage-recs">${q.criteria.map((c,ci)=>`<div>${ci+1}. ${c}</div>`).join("")}</div>
+        </div>`).join("")}
+      </div>`).join("")}
     </details>
 
     ${state.globalNotes ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:20px;"><b style="font-size:12.5px;color:var(--ink-soft);">Globale Beobachtungen:</b><p style="font-size:13px;margin:6px 0 0;">${esc(state.globalNotes)}</p></div>` : ""}
@@ -2375,7 +2439,7 @@ function serializeState(){
     overridden:[...state.overridden], answered:[...state.answered],
     dimNotes:state.dimNotes, globalNotes:state.globalNotes,
     agentEvidence:state.agentEvidence,
-    agentPlan:(state.agentPlan && state.agentPlan.status==="ok") ? {status:"ok", plan:state.agentPlan.plan, kritik:state.agentPlan.kritik||null, revidiert:!!state.agentPlan.revidiert} : null
+    agentPlan:(state.agentPlan && state.agentPlan.status==="ok") ? {status:"ok", plan:state.agentPlan.plan, kritik:state.agentPlan.kritik||null, revidiert:!!state.agentPlan.revidiert, done:state.agentPlan.done||{}} : null
     /* bewusst NICHT enthalten: state.agent (API-Keys/Tokens) */
   };
 }
@@ -2405,6 +2469,7 @@ function syncMetaFields(){
   document.getElementById("metaConsultant").value = state.meta.consultant||"";
   document.getElementById("metaDatum").value = state.meta.datum||"";
   document.getElementById("metaKontext").value = state.meta.kontext||"";
+  document.getElementById("metaFreigabe").value = state.meta.freigabe||"";
   document.getElementById("globalNotes").value = state.globalNotes||"";
 }
 function scheduleAutosave(){
