@@ -560,6 +560,33 @@
 
   <!-- ================= STEP 1: ANGABEN ================= -->
   <section class="panel active" id="panel-angaben">
+    <details class="card accordion-lib" id="introBasis">
+      <summary>Worüber informiert dieses Tool – und auf welcher Grundlage?</summary>
+      <div class="lib-dim">
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px;">
+          Das Tool bestimmt die <b>KI-Reife einer Organisation</b> strukturiert und leitet daraus
+          fundierte nächste Schritte für Change-Vorhaben rund um die KI-Einführung ab – als
+          belastbare Standortbestimmung statt Bauchgefühl.
+        </p>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin:8px 0 0;">
+          <b>Die Grundlage:</b> etablierte, wissenschaftlich validierte Modelle der Technologie-
+          und KI-Adoption sowie offizielle Governance- und Rechtsstandards. Jede Bewertung stützt
+          sich auf belegbare Kriterien, jede Handlungsempfehlung ist zitiert und rechtlich
+          verankert. Im adesso-Vorgehen ist dies <b>Etappe 2 („Verstehen")</b> der vier Etappen
+          der KI-Strategie.
+        </p>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin:10px 0 4px;">
+          <b>Zentrale Grundlagen &amp; Standards:</b>
+        </p>
+        <div id="introSourceChips"></div>
+        <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:10px 0 0;">
+          Branchen- und rechtsspezifische Quellen (EU AI Act, DSGVO, BetrVG, DORA …) erscheinen
+          kontextabhängig im Report. Wie sich <b>Dimensionen, Stufen und Bewertung</b> im Detail
+          zusammensetzen, wird in Schritt 2 direkt bei den Fragen erklärt; die vollständige
+          Herkunft der Reifestufen steht im Report.
+        </p>
+      </div>
+    </details>
     <details class="step-help no-print">
       <summary>❓ Hinweise zu diesem Schritt</summary>
       <ul>
@@ -704,6 +731,30 @@
         <li>Eingaben werden <b>automatisch zwischengespeichert</b> – nichts geht bei einem Reload verloren.</li>
       </ul>
     </details>
+    <details class="card accordion-lib no-print">
+      <summary>Worauf beruht diese Bewertung? (Dimensionen · Stufen · Scoring)</summary>
+      <div class="lib-dim">
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px;">
+          Bewertet wird über <b>6 Dimensionen</b>, eingeordnet in <b>5 Stufen</b>:
+        </p>
+        <ul style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin:6px 0 0;padding-left:18px;">
+          <li><b>Die 6 Dimensionen</b> stehen auf wissenschaftlicher Evidenz – etablierte
+              Adoptions- und Change-Modelle (TAM, UTAUT, TOE, Rogers, Task-Technology-Fit)
+              plus Governance-Standards (NIST AI RMF, OECD). Quellen adversarisch geprüft.</li>
+          <li><b>Die 5 Stufen</b> (Unbewusst → Explorativ → Etabliert → Skaliert → Transformativ)
+              sind am <a href="https://www.gartner.com/en/chief-information-officer/research/ai-maturity-model-toolkit" target="_blank" rel="noopener noreferrer"><b>Gartner AI Maturity Model</b> ↗</a> kalibriert.</li>
+          <li><b>Scoring:</b> Je Frage werden belegbare Kriterien angehakt; kein Kriterium =
+              Stufe 1, jedes erfüllte Kriterium hebt um eine Stufe, alle vier = Stufe 5.
+              Ausgewertet wird getrennt je Dimension, da Organisationen ungleichmäßig reifen.</li>
+        </ul>
+        <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:8px 0 0;">
+          Die vollständige Herkunft der Stufen, die Gartner-Zuordnung und die Quellen-Trennung
+          stehen ausführlich im Report unter <i>„Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft"</i>.
+          Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das
+          Unternehmen anpassen.
+        </p>
+      </div>
+    </details>
     <div class="skala-banner no-print" id="skalaBanner">
       <span>ℹ️ <b>Zur Bewertungsskala:</b> Stufe 1 ist der Basiswert – sie trifft ohne Nachweise auf jede Organisation zu. Jedes belegbar erfüllte Kriterium hebt die Frage um eine Stufe: alle 4 erfüllt = Stufe 5.</span>
       <button type="button" class="btn-mini" onclick="dismissSkalaBanner()">Verstanden</button>
@@ -816,6 +867,16 @@ const STAGES = [
    desc:"KI-Anwendungen werden bereichsübergreifend ausgerollt und systematisch gesteuert. Governance, Kompetenzaufbau und Kommunikation sind professionalisiert."},
   {level:5, name:"Transformativ", hex:"#461EBE", textColor:"#fff",
    desc:"KI ist integraler Bestandteil von Strategie und Kultur. Die Organisation lernt kontinuierlich weiter und entwickelt eigene Innovationen und Geschäftsmodelle."}
+];
+
+/* Herkunft der Stufenlogik – Kalibrierung der eigenen Skala auf etablierte Modelle.
+   Fundierung: docs/recht-branchen-kalibrierung.md, Bereich 3 (Reifegrad-Kalibrierung). */
+const STAGE_CALIBRATION = [
+  {gartner:"Awareness",       cmmi:"Initial"},
+  {gartner:"Active",          cmmi:"—"},
+  {gartner:"Operational",     cmmi:"Defined"},
+  {gartner:"Systemic",        cmmi:"—"},
+  {gartner:"Transformational",cmmi:"(Optimizing-nah)"}
 ];
 
 /* =========================================================================
@@ -2343,6 +2404,72 @@ function renderConsultantView(R){
     </details>
 
     <details class="card accordion-lib">
+      <summary>Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft</summary>
+      <div class="lib-dim">
+        <h5>Worauf beruht die Stufeneinteilung?</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Die 5-stufige Skala ist <b>kein CMMI</b>, sondern am <b>Gartner AI Maturity Model</b>
+          (Awareness → Transformational) kalibriert. Ein Abgleich etablierter Modelle
+          (Gartner, Deloitte, Forrester, BCG/MIT SMR sowie ein peer-reviewtes Literatur-Review,
+          Sadiq et al. 2021) zeigt: Sie konvergieren auf rund fünf Stufen plus mehrere Dimensionen.
+          CMMI dient nur als bekannter Vergleichsanker.
+        </p>
+        <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px;">
+          <thead>
+            <tr style="text-align:left;border-bottom:2px solid var(--line);">
+              <th style="padding:6px 8px;">Stufe (dieses Tool)</th>
+              <th style="padding:6px 8px;">Gartner AI Maturity</th>
+              <th style="padding:6px 8px;">CMMI-Analogie</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${STAGES.map((s,i)=>`
+            <tr style="border-bottom:1px solid var(--line);">
+              <td style="padding:6px 8px;white-space:nowrap;">
+                <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${s.hex};margin-right:6px;vertical-align:middle;"></span>
+                <b>${s.level} ${s.name}</b>
+              </td>
+              <td style="padding:6px 8px;">${STAGE_CALIBRATION[i].gartner}</td>
+              <td style="padding:6px 8px;color:var(--ink-soft);">${STAGE_CALIBRATION[i].cmmi}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="lib-dim">
+        <h5>Die „Pilot-Falle" (Stufe 2 → 3)</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Der Übergang von <b>Explorativ</b> zu <b>Etabliert</b> gilt bei Gartner als
+          <b>häufigster Fehlerpunkt</b>: Piloten, die nie in den produktiven Betrieb überführt
+          werden. Die gestuften Handlungsempfehlungen dieses Tools setzen genau an diesen
+          Stufenübergängen an.
+        </p>
+      </div>
+      <div class="lib-dim">
+        <h5>Wie entsteht der Stufenwert?</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Je Frage werden bis zu vier Evidenzkriterien angehakt. <b>Kein Kriterium = Stufe 1</b>
+          (Basiswert, trifft ohne Nachweise auf jede Organisation zu), <b>jedes erfüllte Kriterium
+          hebt um eine Stufe, alle vier = Stufe 5</b>. Pro Dimension wird gemittelt, dann über alle
+          Dimensionen – bewusst getrennt je Dimension, da Organisationen ungleichmäßig reifen und
+          ein Einzelwert das verdecken würde.
+        </p>
+      </div>
+      <div class="lib-dim">
+        <h5>Fundierung – ehrlich getrennt</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Die <b>sechs Dimensionen</b> stehen auf primärquellengeprüfter Evidenz
+          (TAM, UTAUT, TOE, Rogers, Task-Technology-Fit + NIST AI RMF / OECD; 25 Kernaussagen,
+          adversarisch verifiziert, 0 widerlegt). Die <b>Stufen-Kalibrierung</b> stammt aus
+          Analystenmodellen (Gartner/Deloitte/Forrester), teils hinter Paywalls, aus offiziellen
+          Publikationen bzw. deren Zusammenfassungen verifiziert – also auf Sekundärquellen-Ebene.
+          Details: <code>docs/recht-branchen-kalibrierung.md</code> im Repository.
+        </p>
+      </div>
+    </details>
+
+    <details class="card accordion-lib">
       <summary>Fragenkatalog &amp; Kriterien (Referenz)</summary>
       ${DIMENSIONS.map(dim=>`
       <div class="lib-dim">
@@ -2720,6 +2847,8 @@ try{ if(!localStorage.getItem(SKALA_KEY)){ document.getElementById("skalaBanner"
 const TOUR_STEPS = [
   {panel:"angaben", sel:"#stepper", title:"Drei Schritte zum Report",
    text:"Das Assessment führt in drei Schritten zum Ergebnis: Angaben → Erhebung → Auswertung. Die Schritte sind jederzeit direkt anklickbar."},
+  {panel:"angaben", sel:"#introBasis", title:"Worauf das Tool beruht",
+   text:"Hier steht kompakt, was das Tool leistet und auf welcher wissenschaftlichen und rechtlichen Grundlage – inklusive klickbarer Quellen. Die Details zu Dimensionen, Stufen und Scoring folgen in Schritt 2 direkt bei den Fragen."},
   {panel:"angaben", sel:".meta-grid", title:"Angaben & Branche",
    text:"Hier den Kunden erfassen. Wichtig: Die Branche aktiviert später regulatorische Hinweise im Report (z. B. EU AI Act, DORA)."},
   {panel:"angaben", sel:".agent-card", title:"Agent-Funktionen (optional)",
@@ -2767,6 +2896,7 @@ function tourNext(){
   setTimeout(()=>{
     const el = document.querySelector(s.sel);
     if(!el){ tourNext(); return; }
+    if(el.tagName === "DETAILS"){ el.open = true; }
     el.scrollIntoView({block:"center", behavior:"auto"});
     setTimeout(()=>positionTour(el, s), 60);
   }, panelWechsel ? 180 : 30);
@@ -2835,6 +2965,15 @@ try{ if(!localStorage.getItem(INTRO_KEY)) showIntro(); }catch(e){}
   } else {
     try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
   }
+})();
+
+/* Zentrale Grundlagen-Quellen auf der Einstiegsseite (Schritt 1) – klickbar aus dem Register */
+(function initIntroSources(){
+  const el = document.getElementById("introSourceChips");
+  if(!el) return;
+  const keys = ["tam-meta","utaut-ttf","toe-meta","rogers-cluster","errida-lotfi",
+                "harrison2021","sadiq2021","gartner-aim","nist-rmf","oecd-ai","iso-42001","adesso-tom"];
+  el.innerHTML = srcChipsHtml(keys);
 })();
 </script>
 </body>
