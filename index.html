@@ -180,6 +180,11 @@
   .agent-summary-box .agent-tag{font-size:11px;font-weight:800;color:#fff;background:var(--brand-purple);padding:3px 9px;border-radius:999px;margin-bottom:10px;display:inline-block;}
   .agent-summary-box p{margin:0;font-size:14px;line-height:1.6;color:var(--ink);}
 
+  /* Branche-Feld: Datalist-Signal (Dropdown-Pfeil) */
+  .input-wrap{position:relative;}
+  .field .input-wrap input[type=text]{padding-right:28px;}
+  .datalist-caret{position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint);pointer-events:none;font-size:12px;}
+
   /* ---------- Step 2: Erhebung ---------- */
   .erhebung-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
   .erhebung-toolbar .et-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
@@ -261,6 +266,7 @@
   .score-row{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
   .score-row b{color:var(--brand-primary);font-size:14.5px;}
   .score-hint{color:var(--ink-faint);font-weight:400;}
+  .suggest-basis{color:var(--ink-faint);font-style:italic;font-size:12px;}
   .override-row{display:flex;align-items:center;gap:12px;}
   .override-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
   .override-row input[type=range]{flex:1;accent-color:var(--brand-primary);height:6px;}
@@ -696,7 +702,11 @@
         </div>
         <div class="field">
           <label>Branche</label>
-          <input type="text" id="metaBranche" list="brancheOptions" placeholder="z. B. Automotive, Handel, Öffentlicher Sektor">
+          <div class="input-wrap">
+            <input type="text" id="metaBranche" list="brancheOptions" placeholder="z. B. Versicherungen · Liste öffnen für Vorschläge">
+            <span class="datalist-caret" aria-hidden="true">▾</span>
+          </div>
+          <span class="hint">Für gängige Branchen gibt es Vorschläge (Liste aufklappen). Die gewählte Branche aktiviert regulatorische Hinweise im Report (z. B. EU AI Act, DORA).</span>
           <datalist id="brancheOptions">
             <option value="Automotive">
             <option value="Banken & Finanzdienstleistungen">
@@ -713,7 +723,7 @@
         </div>
         <div class="field">
           <label>Consultant</label>
-          <input type="text" id="metaConsultant" placeholder="Ihr Name">
+          <input type="text" id="metaConsultant" placeholder="Vor- und Nachname">
         </div>
         <div class="field">
           <label>Berichtsdatum</label>
@@ -733,7 +743,7 @@
         <div class="field full">
           <label>Projektkontext (optional, intern)</label>
           <textarea id="metaKontext" placeholder="Kurzer Kontext: Anlass des Assessments, Rahmenbedingungen, beteiligte Personen ..."></textarea>
-          <span class="hint">Dieses Feld erscheint nur in der Consultant-Ansicht.</span>
+          <span class="hint">Erscheint nur in der Consultant-Ansicht und dient dem Agenten (falls aktiv) als zusätzlicher Kontext für Zusammenfassung und Maßnahmenplan. Fließt nicht in den Score ein.</span>
         </div>
       </div>
     </div>
@@ -890,8 +900,8 @@
       <div class="report-meta" id="reportMetaLine"></div>
       <div class="btn-row no-print">
         <button class="btn btn-ghost" onclick="goToStep('erhebung')">← Zurück zur Erhebung</button>
-        <button class="btn btn-secondary" onclick="copySummary()">📋 Text kopieren</button>
-        <button class="btn btn-secondary" onclick="window.print()">🖨️ Drucken / PDF</button>
+        <button class="btn btn-secondary" onclick="copySummary()" title="Kopiert eine Text-Zusammenfassung (Gesamt-Reifegrad, Scores je Dimension, Top-3) in die Zwischenablage – für Mail oder Protokoll.">📋 Zusammenfassung kopieren</button>
+        <button class="btn btn-secondary" onclick="window.print()" title="Druckt die aktuell sichtbare Ansicht bzw. speichert sie als PDF.">🖨️ Drucken / PDF</button>
       </div>
     </div>
     <div id="reportRoot"></div>
@@ -1865,7 +1875,7 @@ function renderErhebung(){
                 }).join("")}
               </div>
               <div class="score-row">
-                Automatischer Vorschlag aus den Kriterien: <b id="suggest-${q.id}">${suggested}</b>/5
+                Automatischer Vorschlag aus den Kriterien: <b id="suggest-${q.id}">${suggested}</b>/5<span class="suggest-basis" id="basis-${q.id}">${suggested===1?" – Basis, noch keine Kriterien belegt":""}</span>
                 <span class="score-hint">(Skala 1–5: kein Kriterium erfüllt = Stufe 1 (Basis) · alle 4 erfüllt = Stufe 5)</span>
               </div>
               <div class="override-row">
@@ -1917,6 +1927,8 @@ function renderErhebung(){
       state.criteria[qid][idx] = e.currentTarget.checked;
       const suggested = suggestedScore(qid);
       document.getElementById("suggest-"+qid).textContent = suggested;
+      const basisEl = document.getElementById("basis-"+qid);
+      if(basisEl){ basisEl.textContent = suggested===1 ? " – Basis, noch keine Kriterien belegt" : ""; }
       state.answered.add(qid);
       if(!state.overridden.has(qid)){
         state.answers[qid] = suggested;
@@ -2213,6 +2225,7 @@ async function agentGenerateSummary(viewMode){
   const dimLines = R.dims.map(d=>`- ${d.dim.name}: Score ${fmt1(d.avg)}/5, Stufe ${d.stage} (${stageInfo(d.stage).name})${d.note?" — Notiz: "+d.note:""}`).join("\n");
   const top3Lines = R.top3.map((t,i)=>`${i+1}. ${t.dim.name}: ${t.dim.recommendations[t.stage][0].text}`).join("\n");
   const dataBlock = `Kunde/Bereich: ${state.meta.kunde||"n/a"} / ${state.meta.bereich||"n/a"}${state.meta.branche?" (Branche: "+state.meta.branche+")":""}\n`+
+    (state.meta.kontext ? `Projektkontext: ${state.meta.kontext}\n` : "")+
     `Gesamt-Reifegrad: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n\n`+
     `Scores je Dimension:\n${dimLines}\n\nTop-3 Handlungsempfehlungen:\n${top3Lines}`;
 
@@ -2247,6 +2260,7 @@ const PLAN_SYS_REVISION = "Du bist erfahrene:r Change-Management-Berater:in. Üb
 function buildPlanDataBlock(R){
   const minDim = R.dims.reduce((a,b)=>(b.avg<a.avg?b:a), R.dims[0]);
   let s = `Kunde: ${state.meta.kunde||"n/a"} | Fachbereich: ${state.meta.bereich||"n/a"} | Branche: ${state.meta.branche||"n/a"}\n`;
+  if(state.meta.kontext){ s += `Projektkontext: ${state.meta.kontext}\n`; }
   s += `Gesamt: Stufe ${R.overallStage} (${stageInfo(R.overallStage).name}), Score ${fmt1(R.overallAvg)}/5\n`;
   s += `Schwächste Dimension (Engpass-Kandidat): ${minDim.dim.name} (Stufe ${minDim.stage})\n\n`;
   s += "DIMENSIONEN MIT EMPFEHLUNGEN DER JEWEILS AKTUELLEN STUFE:\n";
