@@ -181,6 +181,26 @@
   .agent-summary-box p{margin:0;font-size:14px;line-height:1.6;color:var(--ink);}
 
   /* ---------- Step 2: Erhebung ---------- */
+  .erhebung-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .erhebung-toolbar .et-label{font-size:13px;font-weight:700;color:var(--ink-soft);}
+  .erhebung-toolbar .et-hint{font-size:12px;color:var(--ink-faint);}
+  .view-toggle{display:flex;background:var(--bg-alt);border-radius:999px;padding:4px;gap:2px;}
+  .view-toggle button{
+    appearance:none;border:none;background:transparent;cursor:pointer;font:inherit;font-size:13px;
+    font-weight:700;color:var(--ink-soft);padding:6px 14px;border-radius:999px;transition:background .12s,color .12s;
+  }
+  .view-toggle button.active{background:var(--brand-primary);color:#fff;box-shadow:var(--shadow-soft);}
+
+  /* Fokus-Modus: eine Frage nach der anderen */
+  .focus-nav{display:none;}
+  .focus-counter{font-size:13px;font-weight:800;color:var(--ink-soft);}
+  #dimContainer.view-fokus .focus-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:2px 0 16px;padding:10px 14px;background:var(--bg-alt);border-radius:8px;}
+  #dimContainer.view-fokus .question{display:none;}
+  #dimContainer.view-fokus .question.focus-current{display:block;}
+  #dimContainer.view-fokus .freitext-block{display:none;}
+  #dimContainer.view-fokus .dim-card.focus-last .freitext-block{display:block;}
+  .focus-nav button[disabled]{opacity:.4;cursor:default;}
+
   .progress-wrap{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
   .progress-bar{flex:1;height:9px;background:var(--bg-alt);border-radius:999px;overflow:hidden;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--brand-primary),var(--brand-primary-dark));width:0%;transition:width .2s;}
@@ -232,6 +252,8 @@
 
   .anchor-hint{display:flex;justify-content:space-between;gap:14px;font-size:11px;color:var(--ink-faint);font-style:italic;margin:0 0 10px;}
   .criteria-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
+  .crit-hint{font-size:11px;color:var(--ink-faint);font-style:italic;margin:-2px 0 3px;line-height:1.4;}
+  .override-hint{flex-basis:100%;font-size:11px;color:var(--ink-faint);margin-top:-4px;line-height:1.4;}
   .criterion{font-size:13px;color:var(--ink-soft);cursor:pointer;line-height:1.4;}
   .criterion-row{display:flex;align-items:flex-start;gap:9px;}
   .criterion input[type=checkbox]{margin-top:3px;accent-color:var(--brand-primary);width:15px;height:15px;flex-shrink:0;cursor:pointer;}
@@ -694,8 +716,9 @@
           <input type="text" id="metaConsultant" placeholder="Ihr Name">
         </div>
         <div class="field">
-          <label>Datum der Erhebung</label>
+          <label>Berichtsdatum</label>
           <input type="date" id="metaDatum">
+          <span class="hint">Datum, das im Report und Export erscheint.</span>
         </div>
         <div class="field">
           <label>KI-Einsatz für diesen Projektkontext freigegeben?</label>
@@ -825,6 +848,14 @@
     <div class="skala-banner no-print" id="skalaBanner">
       <span>ℹ️ <b>Zur Bewertungsskala:</b> Stufe 1 ist der Basiswert – sie trifft ohne Nachweise auf jede Organisation zu. Jedes belegbar erfüllte Kriterium hebt die Frage um eine Stufe: alle 4 erfüllt = Stufe 5.</span>
       <button type="button" class="btn-mini" onclick="dismissSkalaBanner()">Verstanden</button>
+    </div>
+    <div class="erhebung-toolbar no-print">
+      <span class="et-label">Führung:</span>
+      <div class="view-toggle" id="erhebungViewToggle">
+        <button type="button" data-view="liste" onclick="setErhebungView('liste')">📋 Listenansicht</button>
+        <button type="button" data-view="fokus" onclick="setErhebungView('fokus')">🎯 Fokus-Modus</button>
+      </div>
+      <span class="et-hint" id="erhebungViewHint"></span>
     </div>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -1515,6 +1546,8 @@ const state = {
   step:"angaben",
   mode:"consultant",
   reportTab:"ueberblick", // aktiver Report-Tab (bleibt über Re-Renders erhalten)
+  erhebungView:"liste",   // Schritt-2-Ansicht: "liste" (alle Fragen) | "fokus" (eine Frage nach der anderen)
+  focusIdx:{},            // dimId -> aktueller Frage-Index im Fokus-Modus
   answers:{},      // qid -> 1..5 (finale Bewertung, ggf. manuell übersteuert)
   criteria:{},     // qid -> [bool,bool,bool,bool] Evidence-Kriterien
   overridden:new Set(), // qids, bei denen die Bewertung manuell vom Vorschlag abweicht
@@ -1804,15 +1837,21 @@ function renderErhebung(){
       </div>
       <div class="dim-body">
         <div class="dim-body-inner">
-          ${dim.questions.map(q=>{
+          <div class="focus-nav no-print">
+            <button type="button" class="btn-mini focus-prev" onclick="focusNav('${dim.id}',-1)">◀ Zurück</button>
+            <span class="focus-counter">Frage 1 von ${dim.questions.length}</span>
+            <button type="button" class="btn-mini focus-next" onclick="focusNav('${dim.id}',1)">Weiter ▶</button>
+          </div>
+          ${dim.questions.map((q,qi)=>{
             const suggested = suggestedScore(q.id);
             const current = state.answers[q.id];
             const isOverridden = state.overridden.has(q.id);
             return `
-            <div class="question">
+            <div class="question" data-dim="${dim.id}" data-qidx="${qi}">
               <div class="question-text">${q.text}</div>
               <div class="anchor-hint"><span>1 = ${q.low}</span><span>5 = ${q.high}</span></div>
               <div class="criteria-list">
+                <div class="crit-hint">Unabhängig ankreuzbar – Reihenfolge egal. Gezählt wird die Anzahl: jedes belegbar erfüllte Kriterium hebt die Stufe um eins.</div>
                 ${q.criteria.map((c,ci)=>{
                   const ev = (state.agentEvidence[q.id]||{})[ci];
                   return `
@@ -1835,6 +1874,7 @@ function renderErhebung(){
                   class="q-slider" data-qid="${q.id}" data-dim="${dim.id}">
                 <span class="val-pill" id="val-${q.id}">${current}</span>
                 <button type="button" class="btn-sync" id="sync-${q.id}" style="display:${isOverridden?'inline-block':'none'}">↺ Vorschlag übernehmen</button>
+                <div class="override-hint">Ihr Experten-Urteil hat Vorrang – der Vorschlag oben ist nur der Ausgangspunkt, den Sie jederzeit anpassen können.</div>
               </div>
             </div>`;
           }).join("")}
@@ -1924,7 +1964,52 @@ function renderErhebung(){
     ta.addEventListener("input",(e)=>{ state.dimNotes[e.target.dataset.dimnote] = e.target.value; });
   });
   updateProgress();
+  applyErhebungView();
 }
+
+/* ---------- Führung Schritt 2: Listenansicht ↔ Fokus-Modus ---------- */
+function setErhebungView(v){
+  state.erhebungView = v;
+  try{ localStorage.setItem("ki-reifegrad-erhebungview", v); }catch(e){}
+  applyErhebungView();
+}
+function applyErhebungView(){
+  const c = document.getElementById("dimContainer");
+  if(!c) return;
+  const fokus = state.erhebungView === "fokus";
+  c.classList.toggle("view-fokus", fokus);
+  document.querySelectorAll("#erhebungViewToggle button").forEach(b=>b.classList.toggle("active", b.dataset.view===state.erhebungView));
+  const hint = document.getElementById("erhebungViewHint");
+  if(hint) hint.textContent = fokus
+    ? "Eine Frage nach der anderen – Sie klicken sich durch, es wird weniger Text auf einmal gezeigt."
+    : "Alle Fragen einer Dimension auf einen Blick.";
+  if(fokus){ DIMENSIONS.forEach(d=>{ if(state.dimOpen[d.id]) applyFocus(d.id); }); }
+}
+function applyFocus(dimId){
+  const card = document.getElementById("card-"+dimId);
+  if(!card) return;
+  const dim = DIMENSIONS.find(d=>d.id===dimId);
+  const n = dim.questions.length;
+  let idx = state.focusIdx[dimId] || 0;
+  idx = Math.max(0, Math.min(n-1, idx));
+  state.focusIdx[dimId] = idx;
+  card.querySelectorAll(".question").forEach(q=>{
+    q.classList.toggle("focus-current", parseInt(q.dataset.qidx,10)===idx);
+  });
+  card.classList.toggle("focus-last", idx===n-1);
+  const counter = card.querySelector(".focus-counter");
+  if(counter) counter.textContent = "Frage "+(idx+1)+" von "+n;
+  const prev = card.querySelector(".focus-prev"), next = card.querySelector(".focus-next");
+  if(prev) prev.disabled = idx===0;
+  if(next) next.disabled = idx===n-1;
+}
+function focusNav(dimId, delta){
+  state.focusIdx[dimId] = (state.focusIdx[dimId]||0) + delta;
+  applyFocus(dimId);
+}
+(function initErhebungView(){
+  try{ const v = localStorage.getItem("ki-reifegrad-erhebungview"); if(v==="fokus"||v==="liste") state.erhebungView = v; }catch(e){}
+})();
 
 /* ---------- Feature A: Evidence-Mining-Agent ---------- */
 async function agentAnalyzeDim(dimId){
@@ -2012,6 +2097,7 @@ async function agentSuggestQuestion(dimId){
 function toggleDim(dimId){
   state.dimOpen[dimId] = !state.dimOpen[dimId];
   document.getElementById("card-"+dimId).classList.toggle("open", state.dimOpen[dimId]);
+  if(state.dimOpen[dimId] && state.erhebungView==="fokus"){ applyFocus(dimId); }
 }
 function updateProgress(){
   const total = DIMENSIONS.reduce((n,d)=>n+d.questions.length,0);
