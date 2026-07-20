@@ -550,8 +550,10 @@
   .persist-bar{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;flex-wrap:wrap;}
   .persist-label{font-size:12px;font-weight:700;color:var(--ink-soft);}
   /* ---------- Skala-Hinweis-Banner (Erhebung) ---------- */
-  .skala-banner{display:none;align-items:center;gap:12px;background:var(--accent-blue-bg);border:1px solid var(--accent-blue-border);border-radius:var(--radius);padding:10px 14px;margin:0 0 16px;font-size:13px;color:var(--ink-soft);}
-  .skala-banner .btn-mini{margin-left:auto;flex-shrink:0;}
+  .erhebung-modes{margin:2px 0;}
+  .erhebung-modes > div{display:flex;gap:10px;font-size:13px;color:var(--ink-soft);margin:9px 0;line-height:1.5;}
+  .erhebung-modes .em{flex-shrink:0;width:22px;text-align:center;}
+  .skala-explain{background:var(--accent-blue-bg);border:1px solid var(--accent-blue-border);border-radius:8px;padding:12px 14px;margin-top:16px;font-size:13px;color:var(--ink-soft);line-height:1.55;}
   /* ---------- Auswertungsgrundlage-Block ---------- */
   .qbreak-box{margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);}
   .qbreak-title{font-size:10.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
@@ -848,10 +850,6 @@
         <b>Worauf die Bewertung beruht:</b> 6 Dimensionen × 5 Stufen (Unbewusst → Explorativ → Etabliert → Skaliert → Transformativ), kalibriert am <a href="https://www.gartner.com/en/chief-information-officer/research/ai-maturity-model-toolkit" target="_blank" rel="noopener noreferrer">Gartner AI Maturity Model ↗</a>. Die Dimensionen stützen sich auf wissenschaftlich validierte Adoptions-/Change-Modelle (TAM, UTAUT, TOE, Rogers) und Governance-Standards (NIST AI RMF, OECD), adversarisch geprüft. Ausgewertet wird getrennt je Dimension, da Organisationen ungleichmäßig reifen. Vollständige Herkunft im Report unter „Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft".
       </div>
     </details>
-    <div class="skala-banner no-print" id="skalaBanner">
-      <span>ℹ️ <b>Zur Bewertungsskala:</b> Stufe 1 ist der Basiswert – sie trifft ohne Nachweise auf jede Organisation zu. Jedes belegbar erfüllte Kriterium hebt die Frage um eine Stufe: alle 4 erfüllt = Stufe 5.</span>
-      <button type="button" class="btn-mini" onclick="dismissSkalaBanner()">Verstanden</button>
-    </div>
     <div class="erhebung-toolbar no-print">
       <span class="et-label">Führung:</span>
       <div class="view-toggle" id="erhebungViewToggle">
@@ -929,6 +927,24 @@
     <div class="intro-actions" style="gap:10px;">
       <button type="button" class="btn btn-primary" onclick="jumpToFirstGap()">↩ Zur ersten Lücke</button>
       <button type="button" class="btn btn-secondary" onclick="proceedToAuswertung()">Trotzdem zur Auswertung →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= ERHEBUNG-EINSTIEG (Popup beim ersten Öffnen von Schritt 2) ================= -->
+<div class="intro-overlay no-print" id="erhebungIntroOverlay">
+  <div class="intro-card">
+    <h2>So arbeiten Sie in der Erhebung</h2>
+    <p class="intro-sub">Je Frage haken Sie an, welche Kriterien belegbar erfüllt sind – daraus entsteht automatisch ein Stufenvorschlag, den Sie per Slider jederzeit übersteuern können.</p>
+    <div class="erhebung-modes">
+      <div><span class="em">📋</span><span><b>Listenansicht:</b> alle Fragen einer Dimension auf einen Blick.</span></div>
+      <div><span class="em">🎯</span><span><b>Fokus-Modus:</b> eine Frage nach der anderen – weniger Text, mehr Führung. Oben umschaltbar.</span></div>
+    </div>
+    <div class="skala-explain">
+      ℹ️ <b>Zur Bewertungsskala:</b> Stufe 1 ist der Basiswert – sie trifft ohne Nachweise auf jede Organisation zu. Jedes belegbar erfüllte Kriterium hebt die Frage um eine Stufe: <b>alle 4 erfüllt = Stufe 5</b>.
+    </div>
+    <div class="intro-actions">
+      <button type="button" class="btn btn-primary" onclick="closeErhebungIntro()">Verstanden – los geht's</button>
     </div>
   </div>
 </div>
@@ -1777,7 +1793,7 @@ function goToStep(step){
   document.querySelectorAll(".stepper .step").forEach((s,i)=>{
     s.classList.toggle("done", order.indexOf(s.dataset.step) < idx);
   });
-  if(step==="erhebung"){ renderErhebung(); }
+  if(step==="erhebung"){ renderErhebung(); maybeShowErhebungIntro(); }
   if(step==="auswertung"){ renderReport(); }
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -3169,13 +3185,18 @@ document.getElementById("themeSwitch").addEventListener("click",(e)=>{
   }
 })();
 
-/* Skala-Hinweis-Banner: einmalig anzeigen, bis bestätigt */
-const SKALA_KEY = "ki-reifegrad-skala-ok";
-function dismissSkalaBanner(){
-  document.getElementById("skalaBanner").style.display = "none";
-  try{ localStorage.setItem(SKALA_KEY, "1"); }catch(e){}
+/* Erhebung-Einstieg: Popup beim ersten Öffnen von Schritt 2 – nur über
+   „Verstanden“ schließbar (bewusst kein Backdrop-/Esc-Close, damit die
+   Bewertungsskala einmal aktiv bestätigt wird, bevor man ins Arbeiten kommt). */
+const ERHEBUNG_INTRO_KEY = "ki-reifegrad-erhebung-intro-v1";
+function showErhebungIntro(){ document.getElementById("erhebungIntroOverlay").classList.add("open"); }
+function closeErhebungIntro(){
+  document.getElementById("erhebungIntroOverlay").classList.remove("open");
+  try{ localStorage.setItem(ERHEBUNG_INTRO_KEY, "1"); }catch(e){}
 }
-try{ if(!localStorage.getItem(SKALA_KEY)){ document.getElementById("skalaBanner").style.display = "flex"; } }catch(e){}
+function maybeShowErhebungIntro(){
+  try{ if(!localStorage.getItem(ERHEBUNG_INTRO_KEY)) showErhebungIntro(); }catch(e){}
+}
 
 /* =========================================================================
    GEFÜHRTE TOUR: Spotlight-Hervorhebung + Erklärkarte, 11 Stationen
