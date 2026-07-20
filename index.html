@@ -202,6 +202,13 @@
   .dim-score-badge{
     font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--bg-alt);color:var(--ink-soft);
   }
+  .dim-progress-badge{
+    font-size:11px;font-weight:700;padding:4px 10px;border-radius:999px;
+    background:var(--caveat-bg);color:var(--caveat-ink);border:1px solid var(--caveat-border);white-space:nowrap;
+  }
+  .dim-progress-badge.complete{background:var(--accent-teal-bg);color:var(--teal-dark);border-color:var(--accent-teal-border);}
+  .complete-list{display:flex;flex-direction:column;gap:6px;margin:0 0 4px;}
+  .complete-list div{font-size:13px;color:var(--ink-soft);}
   .chevron{transition:transform .2s;color:var(--ink-faint);font-size:13px;}
   .dim-card.open .chevron{transform:rotate(180deg);}
   .dim-body{max-height:0;overflow:hidden;transition:max-height .25s ease;}
@@ -715,7 +722,7 @@
     </div>
     <div class="nav-actions">
       <button class="btn btn-ghost" onclick="goToStep('angaben')">← Zurück</button>
-      <button class="btn btn-primary" onclick="goToStep('auswertung')">Auswertung anzeigen →</button>
+      <button class="btn btn-primary" onclick="requestAuswertung()">Auswertung anzeigen →</button>
     </div>
   </section>
 
@@ -763,6 +770,19 @@
     <div class="intro-actions" style="gap:10px;">
       <button type="button" class="btn btn-secondary" onclick="closeIntro()">Direkt loslegen</button>
       <button type="button" class="btn btn-primary" onclick="startTour()">🎯 Geführte Tour starten</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= VOLLSTÄNDIGKEITS-HINWEIS (vor der Auswertung) ================= -->
+<div class="intro-overlay no-print" id="completeOverlay">
+  <div class="intro-card">
+    <h2>Erhebung noch nicht vollständig</h2>
+    <p class="intro-sub">In diesen Bereichen wurden noch nicht alle Fragen bewertet. Nicht bewertete Fragen fließen als Stufe 1 (Basiswert) in die Auswertung ein – das kann das Ergebnis verzerren.</p>
+    <div class="complete-list" id="completeList"></div>
+    <div class="intro-actions" style="gap:10px;">
+      <button type="button" class="btn btn-primary" onclick="jumpToFirstGap()">↩ Zur ersten Lücke</button>
+      <button type="button" class="btn btn-secondary" onclick="proceedToAuswertung()">Trotzdem zur Auswertung →</button>
     </div>
   </div>
 </div>
@@ -1412,6 +1432,8 @@ function dimAverage(dim){
   const vals = dim.questions.map(q=>state.answers[q.id]);
   return vals.reduce((a,b)=>a+b,0)/vals.length;
 }
+function dimAnsweredCount(dim){ return dim.questions.filter(q=>state.answered.has(q.id)).length; }
+function incompleteDims(){ return DIMENSIONS.filter(d=>dimAnsweredCount(d) < d.questions.length); }
 function overallAverage(){
   const avgs = DIMENSIONS.map(dimAverage);
   return avgs.reduce((a,b)=>a+b,0)/avgs.length;
@@ -1582,8 +1604,37 @@ function goToStep(step){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 document.querySelectorAll(".stepper .step").forEach(s=>{
-  s.addEventListener("click", ()=>goToStep(s.dataset.step));
+  s.addEventListener("click", ()=> s.dataset.step==="auswertung" ? requestAuswertung() : goToStep(s.dataset.step));
 });
+
+/* Vollständigkeits-Gate vor der Auswertung */
+function requestAuswertung(){
+  const inc = incompleteDims();
+  if(inc.length === 0){ goToStep("auswertung"); return; }
+  document.getElementById("completeList").innerHTML = inc.map(d=>{
+    const c = dimAnsweredCount(d);
+    return `<div>• <b>${esc(d.name)}</b> – ${c} von ${d.questions.length} Fragen bewertet</div>`;
+  }).join("");
+  document.getElementById("completeOverlay").classList.add("open");
+}
+function proceedToAuswertung(){
+  document.getElementById("completeOverlay").classList.remove("open");
+  goToStep("auswertung");
+}
+function jumpToFirstGap(){
+  document.getElementById("completeOverlay").classList.remove("open");
+  const inc = incompleteDims();
+  if(!inc.length){ goToStep("auswertung"); return; }
+  const target = inc[0];
+  if(state.step !== "erhebung"){ goToStep("erhebung"); }
+  DIMENSIONS.forEach(d=>{ state.dimOpen[d.id] = (d.id===target.id); });
+  renderErhebung();
+  setTimeout(()=>{
+    const card = document.getElementById("card-"+target.id);
+    if(card) card.scrollIntoView({block:"start", behavior:"smooth"});
+  }, 60);
+}
+document.getElementById("completeOverlay").addEventListener("click",(e)=>{ if(e.target===e.currentTarget){ e.currentTarget.classList.remove("open"); } });
 document.getElementById("modeToggle").addEventListener("click", (e)=>{
   const btn = e.target.closest("button");
   if(!btn) return;
@@ -1617,6 +1668,7 @@ function renderErhebung(){
           </div>
         </div>
         <div class="dim-header-right">
+          <span class="dim-progress-badge ${dimAnsweredCount(dim)===dim.questions.length?'complete':''}" id="prog-${dim.id}">${dimAnsweredCount(dim)===dim.questions.length?'✓ vollständig':dimAnsweredCount(dim)+'/'+dim.questions.length+' bewertet'}</span>
           <span class="dim-score-badge" id="badge-${dim.id}">Ø ${fmt1(avg)}</span>
           <span class="chevron">▾</span>
         </div>
@@ -1681,6 +1733,13 @@ function renderErhebung(){
 
   function refreshDimBadge(dim){
     document.getElementById("badge-"+dim.id).textContent = "Ø "+fmt1(dimAverage(dim));
+    const prog = document.getElementById("prog-"+dim.id);
+    if(prog){
+      const c = dimAnsweredCount(dim);
+      const complete = c === dim.questions.length;
+      prog.textContent = complete ? "✓ vollständig" : c+"/"+dim.questions.length+" bewertet";
+      prog.classList.toggle("complete", complete);
+    }
   }
 
   container.querySelectorAll(".criteria-list input[type=checkbox]").forEach(cb=>{
@@ -1829,7 +1888,8 @@ function updateProgress(){
   const total = DIMENSIONS.reduce((n,d)=>n+d.questions.length,0);
   const answered = state.answered.size;
   document.getElementById("progressFill").style.width = (answered/total*100)+"%";
-  document.getElementById("progressText").textContent = answered+" / "+total+" Fragen aktiv verändert";
+  const vollstaendig = DIMENSIONS.filter(d=>dimAnsweredCount(d)===d.questions.length).length;
+  document.getElementById("progressText").textContent = answered+" / "+total+" Fragen bewertet · "+vollstaendig+"/"+DIMENSIONS.length+" Dimensionen vollständig";
 }
 
 /* Meta fields binding */
