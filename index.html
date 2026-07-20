@@ -272,6 +272,69 @@
   .report-meta{font-size:13px;color:var(--ink-faint);}
   .report-meta b{color:var(--ink-soft);}
 
+  /* ---------- Report-Tabs (Progressive Disclosure) ---------- */
+  .report-tabs{
+    display:flex;gap:4px;flex-wrap:wrap;margin-bottom:22px;
+    border-bottom:2px solid var(--border);padding-bottom:0;
+  }
+  .report-tab{
+    appearance:none;border:none;background:transparent;cursor:pointer;
+    font:inherit;font-size:14px;font-weight:700;color:var(--ink-faint);
+    padding:11px 18px;border-radius:9px 9px 0 0;position:relative;top:2px;
+    border-bottom:2px solid transparent;display:flex;align-items:center;gap:8px;
+    transition:color .12s,background .12s;
+  }
+  .report-tab:hover{color:var(--ink-soft);background:var(--bg-alt);}
+  .report-tab.active{color:var(--brand-primary);border-bottom-color:var(--brand-primary);}
+  .report-tab .tab-badge{
+    font-size:11px;font-weight:800;min-width:19px;height:19px;padding:0 6px;border-radius:999px;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--bg-alt);color:var(--ink-faint);
+  }
+  .report-tab.active .tab-badge{background:var(--accent-blue-bg);color:var(--brand-primary);}
+  .report-tab .tab-badge.warn{background:var(--engpass-bg);color:var(--engpass-ink);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;animation:tabFade .18s ease;}
+  @keyframes tabFade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  /* ---------- Einklappbare Info-Box mit Badge ---------- */
+  .info-collapse{margin-bottom:16px;padding:0;overflow:hidden;}
+  .info-collapse > summary{
+    cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;
+    padding:14px 18px;font-size:13.5px;font-weight:700;color:var(--ink-soft);
+  }
+  .info-collapse > summary::-webkit-details-marker{display:none;}
+  .info-collapse > summary::after{content:"▾";margin-left:auto;color:var(--ink-faint);font-size:12px;transition:transform .15s;}
+  .info-collapse[open] > summary::after{transform:rotate(180deg);}
+  .info-collapse .info-badge{
+    font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;
+    background:var(--accent-blue-bg);color:var(--brand-primary);
+  }
+  .info-collapse .info-badge.caveat{background:var(--caveat-bg);color:var(--caveat-ink);}
+  .info-collapse .info-badge.recht{background:var(--accent-purple-bg);color:var(--purple-dark);}
+  .info-collapse .info-body{padding:0 18px 16px;}
+
+  /* ---------- Kompakte Dimensions-Kacheln ---------- */
+  .dim-tile-head{display:flex;align-items:center;gap:12px;}
+  .dim-tile-icon{
+    width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;
+    justify-content:center;font-size:17px;background:var(--accent-blue-bg);
+  }
+  .dim-tile-head .dim-tile-title{flex:1;min-width:0;}
+  .dim-tile-head h4{margin:0;font-size:14.5px;}
+  .dim-result-card .tom-tag{margin-top:1px;}
+  .dim-tile-details{margin-top:12px;border-top:1px dashed var(--border);padding-top:2px;}
+  .dim-tile-details > summary{
+    cursor:pointer;list-style:none;font-size:12.5px;font-weight:700;color:var(--brand-primary);
+    padding:8px 0 2px;display:flex;align-items:center;gap:6px;
+  }
+  .dim-tile-details > summary::-webkit-details-marker{display:none;}
+  .dim-tile-details > summary::before{content:"▸";transition:transform .15s;display:inline-block;}
+  .dim-tile-details[open] > summary::before{transform:rotate(90deg);}
+  .dim-tile-flag{margin-left:auto;font-weight:800;font-size:11px;}
+  .dim-tile-flag.risk{color:var(--engpass-ink);}
+  .dim-tile-flag.note{color:var(--ink-faint);}
+
   .overall-banner{
     display:flex;align-items:center;gap:26px;padding:26px 30px;margin-bottom:20px;
     background:linear-gradient(135deg,var(--paper),var(--accent-blue-bg));
@@ -517,6 +580,10 @@
     .panel{display:block !important;}
     #panel-angaben, #panel-erhebung{display:none !important;}
     .card{box-shadow:none;border:1px solid #ccc;}
+    /* Im Druck alle Report-Tabs ausklappen, Tab-Leiste ausblenden */
+    .report-tabs{display:none !important;}
+    .tab-panel{display:block !important;}
+    .tab-panel + .tab-panel{margin-top:22px;padding-top:22px;border-top:2px solid #ccc;}
   }
 </style>
 </head>
@@ -1447,6 +1514,7 @@ const DIMENSIONS = [
 const state = {
   step:"angaben",
   mode:"consultant",
+  reportTab:"ueberblick", // aktiver Report-Tab (bleibt über Re-Renders erhalten)
   answers:{},      // qid -> 1..5 (finale Bewertung, ggf. manuell übersteuert)
   criteria:{},     // qid -> [bool,bool,bool,bool] Evidence-Kriterien
   overridden:new Set(), // qids, bei denen die Bewertung manuell vom Vorschlag abweicht
@@ -1999,6 +2067,30 @@ function renderReport(){
   buildRadar("radarKunde", R);
 }
 
+/* Report-Tab umschalten – ohne kompletten Re-Render, damit Charts erhalten bleiben.
+   state.reportTab wird gemerkt, sodass ein Re-Render (Agent-Schritte etc.) den Tab hält. */
+function activateReportTab(name){
+  state.reportTab = name;
+  document.querySelectorAll(".consultant-view .report-tab").forEach(b=>{
+    b.classList.toggle("active", b.getAttribute("onclick").includes("'"+name+"'"));
+  });
+  document.querySelectorAll(".consultant-view .tab-panel").forEach(p=>{
+    p.classList.toggle("active", p.dataset.tabPanel===name);
+  });
+}
+
+/* Vor dem Drucken/PDF alle Details im Report aufklappen, danach Zustand wiederherstellen. */
+window.addEventListener("beforeprint", ()=>{
+  document.querySelectorAll("#reportRoot details").forEach(d=>{
+    if(!d.open){ d.dataset.printReopened = "1"; d.open = true; }
+  });
+});
+window.addEventListener("afterprint", ()=>{
+  document.querySelectorAll('#reportRoot details[data-print-reopened="1"]').forEach(d=>{
+    d.open = false; delete d.dataset.printReopened;
+  });
+});
+
 function stageChipHtml(stage){
   const s = stageInfo(stage);
   return `<span class="stage-chip" style="background:${s.hex};color:${s.textColor}">Stufe ${s.level} · ${s.name}</span>`;
@@ -2244,6 +2336,8 @@ function planBoxHtml(R){
   </div>`;
 }
 
+const DIM_ICONS = {strategie:"🎯", prozesse:"⚙️", skills:"🎓", kultur:"🧭", stakeholder:"🤝", widerstaende:"🛡️"};
+
 function renderConsultantView(R){
   const {dims, overallAvg, overallStage, top3} = R;
   const os = stageInfo(overallStage);
@@ -2258,10 +2352,7 @@ function renderConsultantView(R){
 
   const dimCards = dims.map(d=>{
     const s = stageInfo(d.stage);
-    let notesHtml = "";
-    if(d.note){
-      notesHtml += `<div class="dim-notes">„${esc(d.note)}“</div>`;
-    }
+    const notesHtml = d.note ? `<div class="dim-notes">„${esc(d.note)}“</div>` : "";
     let tagsHtml = "";
     if(d.scan.pos.length || d.scan.risk.length){
       tagsHtml = `<div class="tag-row">
@@ -2270,10 +2361,16 @@ function renderConsultantView(R){
       </div>`;
     }
     const qBreak = d.dim.questions.map(q=>`${q.text.slice(0,22)}…: <b>${state.answers[q.id]}</b>`).join(" · ");
+    const recsCount = (d.dim.recommendations[d.stage]||[]).length;
+    /* Signal-Flag rechts in der Detail-Zeile: Risiken zuerst, sonst Notiz */
+    let flag = "";
+    if(d.scan.risk.length){ flag = `<span class="dim-tile-flag risk">⚠ ${d.scan.risk.length} Risiko-Signal${d.scan.risk.length>1?"e":""}</span>`; }
+    else if(d.note){ flag = `<span class="dim-tile-flag note">✎ Notiz</span>`; }
     return `
     <div class="card dim-result-card">
-      <div class="dim-result-top">
-        <div>
+      <div class="dim-tile-head">
+        <div class="dim-tile-icon" style="background:${s.hex}22">${DIM_ICONS[d.dim.id]||"•"}</div>
+        <div class="dim-tile-title">
           <h4>${d.dim.name}</h4>
           ${d.dim.tom ? `<div class="tom-tag">TOM: ${d.dim.tom}</div>` : ""}
         </div>
@@ -2281,19 +2378,19 @@ function renderConsultantView(R){
       </div>
       <div class="bar-track"><div class="bar-fill" style="width:${d.avg/5*100}%;background:${s.hex}"></div></div>
       <div class="dim-result-score">Score: ${fmt1(d.avg)} / 5</div>
-      <div class="qbreak-box"><div class="qbreak-title">Auswertungsgrundlage – Ihre Bewertungen je Frage</div><div class="qbreak">${qBreak}</div></div>
-      ${notesHtml}
-      ${tagsHtml}
-      <details class="dim-recs">
-        <summary>Handlungsempfehlungen für Stufe ${d.stage} anzeigen (${(d.dim.recommendations[d.stage]||[]).length})</summary>
+      <details class="dim-tile-details">
+        <summary>Details &amp; Empfehlungen (${recsCount})${flag}</summary>
+        <div class="qbreak-box"><div class="qbreak-title">Auswertungsgrundlage – Ihre Bewertungen je Frage</div><div class="qbreak">${qBreak}</div></div>
+        ${notesHtml}
+        ${tagsHtml}
         ${(d.dim.recommendations[d.stage]||[]).map(r=>`
         <div class="dim-rec">
           <p>${r.text}</p>
           ${r.begruendung ? `<div class="rec-begruendung">${r.begruendung}</div>` : ""}
           ${srcChipsHtml(r.sources)}
         </div>`).join("")}
+        ${(d.stage < 5 && d.dim.transitions && d.dim.transitions[d.stage]) ? `<div class="rec-transition">🚧 <b>Richtung Stufe ${d.stage+1}:</b> ${d.dim.transitions[d.stage]}</div>` : ""}
       </details>
-      ${(d.stage < 5 && d.dim.transitions && d.dim.transitions[d.stage]) ? `<div class="rec-transition">🚧 <b>Richtung Stufe ${d.stage+1}:</b> ${d.dim.transitions[d.stage]}</div>` : ""}
     </div>`;
   }).join("");
 
@@ -2324,54 +2421,77 @@ function renderConsultantView(R){
         </div>`).join("")}
     </div>`).join("");
 
+  /* Anzahl Dimensionen mit Risiko-Signalen für das Tab-Badge */
+  const riskDims = dims.filter(d=>d.scan.risk.length).length;
+  const T = (name)=> state.reportTab===name ? "active" : "";
+
   return `
   <div class="consultant-view">
-    ${state.meta.kontext ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:16px;"><b style="font-size:12.5px;color:var(--ink-soft);">Projektkontext:</b> <span style="font-size:13px;">${esc(state.meta.kontext)}</span></div>`:""}
-    <div class="card overall-banner">
-      <div class="stage-badge-lg" style="background:${os.hex};color:${os.textColor}">
-        <span class="num">${os.level}</span><span class="of">von 5</span>
+    <div class="report-tabs no-print" role="tablist">
+      <button class="report-tab ${T('ueberblick')}" role="tab" onclick="activateReportTab('ueberblick')">Überblick</button>
+      <button class="report-tab ${T('dimensionen')}" role="tab" onclick="activateReportTab('dimensionen')">Dimensionen <span class="tab-badge${(engpassKritisch||riskDims)?' warn':''}">${engpassKritisch ? "⚠" : dims.length}</span></button>
+      <button class="report-tab ${T('massnahmen')}" role="tab" onclick="activateReportTab('massnahmen')">Maßnahmen</button>
+      <button class="report-tab ${T('recht')}" role="tab" onclick="activateReportTab('recht')">Recht &amp; Kontext</button>
+    </div>
+
+    <!-- ===== TAB 1: ÜBERBLICK ===== -->
+    <div class="tab-panel ${T('ueberblick')}" data-tab-panel="ueberblick">
+      ${state.meta.kontext ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:16px;"><b style="font-size:12.5px;color:var(--ink-soft);">Projektkontext:</b> <span style="font-size:13px;">${esc(state.meta.kontext)}</span></div>`:""}
+      <div class="card overall-banner">
+        <div class="stage-badge-lg" style="background:${os.hex};color:${os.textColor}">
+          <span class="num">${os.level}</span><span class="of">von 5</span>
+        </div>
+        <div class="overall-text">
+          <h2>Gesamt-Reifegrad: ${os.name}</h2>
+          <p>${os.desc}</p>
+          <div class="overall-score-num">Gesamt-Score: ${fmt1(overallAvg)} / 5 (Mittelwert über alle 6 Dimensionen)</div>
+        </div>
       </div>
-      <div class="overall-text">
-        <h2>Gesamt-Reifegrad: ${os.name}</h2>
-        <p>${os.desc}</p>
-        <div class="overall-score-num">Gesamt-Score: ${fmt1(overallAvg)} / 5 (Mittelwert über alle 6 Dimensionen)</div>
+
+      ${engpassHtml}
+
+      ${agentSummaryBoxHtml('consultant')}
+
+      <div class="grid-2">
+        <div class="card chart-card">
+          <h3>Reifegrad je Dimension</h3>
+          <canvas id="radarConsultant" height="260"></canvas>
+        </div>
+        <div class="card top3-card">
+          <h3>Top-3 priorisierte Handlungsempfehlungen</h3>
+          ${top3Html}
+        </div>
+      </div>
+
+      <div class="card etappe-box">
+        <h3>🧭 Einordnung ins adesso-Vorgehensmodell</h3>
+        <p>Dieses Assessment ist <b>Etappe 2 („Verstehen“)</b> der vier Etappen der KI-Strategie. Empfohlene nächste Etappe: <b>Use Case Backlog</b> – identifizierte KI-Use-Cases ganzheitlich nach ROI, Umsetzbarkeit und strategischer Relevanz bewerten und priorisieren. ${srcChipsHtml(["adesso-tom"])}</p>
+        <div class="etappen-track">Management-Befähigung&nbsp;→&nbsp;<b>KI-Reifegrad (Sie sind hier)</b>&nbsp;→&nbsp;Use Case Backlog&nbsp;→&nbsp;KI Target Operating Model</div>
       </div>
     </div>
 
-    ${engpassHtml}
-
-    ${agentSummaryBoxHtml('consultant')}
-
-    ${caveatBoxHtml()}
-    ${brancheBoxHtml()}
-
-    <div class="grid-2">
-      <div class="card chart-card">
-        <h3>Reifegrad je Dimension</h3>
-        <canvas id="radarConsultant" height="260"></canvas>
-      </div>
-      <div class="card top3-card">
-        <h3>Top-3 priorisierte Handlungsempfehlungen</h3>
-        ${top3Html}
-      </div>
+    <!-- ===== TAB 2: DIMENSIONEN ===== -->
+    <div class="tab-panel ${T('dimensionen')}" data-tab-panel="dimensionen">
+      <details class="card info-collapse">
+        <summary><span class="info-badge caveat">Wichtiger Hinweis</span> Wie diese Empfehlungen zu lesen sind</summary>
+        <div class="info-body">${caveatBoxHtml()}</div>
+      </details>
+      <div class="dim-results-grid">${dimCards}</div>
     </div>
 
-    ${planBoxHtml(R)}
+    <!-- ===== TAB 3: MASSNAHMEN ===== -->
+    <div class="tab-panel ${T('massnahmen')}" data-tab-panel="massnahmen">
+      ${planBoxHtml(R)}
+      <details class="card accordion-lib">
+        <summary>Alle Handlungsempfehlungen je Dimension &amp; Reifestufe anzeigen (Referenz)</summary>
+        ${libraryHtml}
+      </details>
+    </div>
 
+    <!-- ===== TAB 4: RECHT & KONTEXT ===== -->
+    <div class="tab-panel ${T('recht')}" data-tab-panel="recht">
     ${legalBoxHtml(overallStage)}
-
-    <div class="dim-results-grid">${dimCards}</div>
-
-    <div class="card etappe-box">
-      <h3>🧭 Einordnung ins adesso-Vorgehensmodell</h3>
-      <p>Dieses Assessment ist <b>Etappe 2 („Verstehen“)</b> der vier Etappen der KI-Strategie. Empfohlene nächste Etappe: <b>Use Case Backlog</b> – identifizierte KI-Use-Cases ganzheitlich nach ROI, Umsetzbarkeit und strategischer Relevanz bewerten und priorisieren. ${srcChipsHtml(["adesso-tom"])}</p>
-      <div class="etappen-track">Management-Befähigung&nbsp;→&nbsp;<b>KI-Reifegrad (Sie sind hier)</b>&nbsp;→&nbsp;Use Case Backlog&nbsp;→&nbsp;KI Target Operating Model</div>
-    </div>
-
-    <details class="card accordion-lib">
-      <summary>Alle Handlungsempfehlungen je Dimension &amp; Reifestufe anzeigen (Referenz)</summary>
-      ${libraryHtml}
-    </details>
+    ${brancheBoxHtml()}
 
     <details class="card accordion-lib">
       <summary>Über die Datenbasis &amp; Methodik (Transparenz)</summary>
@@ -2483,6 +2603,7 @@ function renderConsultantView(R){
     </details>
 
     ${state.globalNotes ? `<div class="card consultant-only" style="padding:16px 20px;margin-bottom:20px;"><b style="font-size:12.5px;color:var(--ink-soft);">Globale Beobachtungen:</b><p style="font-size:13px;margin:6px 0 0;">${esc(state.globalNotes)}</p></div>` : ""}
+    </div><!-- /Tab Recht & Kontext -->
 
     <div class="btn-row no-print">
       <button class="btn btn-ghost" id="btnStartOver" onclick="resetAll()">Assessment zurücksetzen</button>
@@ -2861,11 +2982,13 @@ const TOUR_STEPS = [
    text:"Weicht Ihr Eindruck vom Vorschlag ab? Slider verschieben. „↺ Vorschlag übernehmen“ kehrt zum Kriterienwert zurück."},
   {panel:"erhebung", sel:".dim-card.open .freitext-block", title:"Beobachtungen festhalten",
    text:"Eindrücke aus Interviews im O-Ton notieren – ohne Klarnamen. Mit Agent-Verbindung werden sie automatisch gegen die Kriterien geprüft."},
-  {panel:"auswertung", sel:".overall-banner", title:"Der Report",
-   text:"Gesamt-Reifegrad auf einen Blick – darunter Radar-Chart, Dimensions-Karten mit Quellen und Übergangs-Hinweisen sowie der rechtliche Rahmen."},
-  {panel:"auswertung", sel:".top3-card", title:"Top-3-Handlungsfelder",
-   text:"Die drei schwächsten Dimensionen mit priorisierten, quellenbelegten Empfehlungen – Ihr Einstieg ins Kundengespräch."},
-  {panel:"auswertung", sel:".plan-box", title:"Maßnahmenplan-Agent",
+  {panel:"auswertung", tab:"ueberblick", sel:".report-tabs", title:"Der Report ist in vier Tabs gegliedert",
+   text:"Statt langem Scrollen: Überblick, Dimensionen, Maßnahmen und Recht & Kontext. Jeder Tab bündelt einen Themenblock – klicken Sie sich durch."},
+  {panel:"auswertung", tab:"ueberblick", sel:".overall-banner", title:"Überblick: Reifegrad auf einen Blick",
+   text:"Gesamt-Reifegrad, Radar-Chart, Top-3-Handlungsfelder und die Einordnung ins adesso-Vorgehensmodell – der Einstieg für das Kundengespräch."},
+  {panel:"auswertung", tab:"ueberblick", sel:".top3-card", title:"Top-3-Handlungsfelder",
+   text:"Die drei schwächsten Dimensionen mit priorisierten, quellenbelegten Empfehlungen. Die kompakten Dimensions-Kacheln im Tab „Dimensionen“ zeigen auf Klick alle Details."},
+  {panel:"auswertung", tab:"massnahmen", sel:".plan-box", title:"Maßnahmen: der 90-Tage-Plan",
    text:"Der Agent komponiert daraus einen 90-Tage-Plan – mit Selbstkritik-Schleife und abhakbaren Maßnahmen. Die Freigabe bleibt bei Ihnen."},
   {panel:"auswertung", sel:"#modeToggle", title:"Consultant ↔ Kunde",
    text:"Ein Klick wechselt zur präsentationsfertigen Kunden-Ansicht – ohne Methodik und interne Notizen. Das war die Tour – viel Erfolg!"}
@@ -2893,6 +3016,9 @@ function tourNext(){
   const s = TOUR_STEPS[tourIx];
   const panelWechsel = state.step !== s.panel;
   if(panelWechsel){ goToStep(s.panel); }
+  /* Report-Tab der Station aktivieren, falls angegeben */
+  const tabWechsel = s.tab && state.reportTab !== s.tab;
+  if(tabWechsel){ activateReportTab(s.tab); }
   setTimeout(()=>{
     const el = document.querySelector(s.sel);
     if(!el){ tourNext(); return; }
