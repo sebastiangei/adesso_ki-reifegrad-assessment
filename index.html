@@ -376,6 +376,8 @@
   .overall-text h2{margin:0 0 4px;font-size:20px;}
   .overall-text p{margin:0;color:var(--ink-soft);font-size:14px;max-width:640px;}
   .overall-score-num{font-size:13px;color:var(--ink-faint);margin-top:6px;}
+  .single-score-hint{font-size:12px;color:var(--ink-soft);margin-top:8px;max-width:640px;line-height:1.5;}
+  .single-score-hint .src-row{margin-top:4px;}
 
   /* ---------- Delta-Vergleich (B8) ---------- */
   .compare-bar{
@@ -889,7 +891,7 @@
     </div>
     <div class="progress-wrap">
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-      <div class="progress-text" id="progressText">0 / 24 Fragen beantwortet</div>
+      <div class="progress-text" id="progressText">0 / 26 Fragen beantwortet</div>
     </div>
     <div id="dimContainer"></div>
     <div class="card global-notes">
@@ -1060,6 +1062,11 @@ const SOURCES = {
                     ref:"§ 87 Abs. 1 Nr. 6: erzwingbare Mitbestimmung (BAG: objektive Überwachungseignung genügt – nahezu jeder KI-Einsatz); § 90: frühzeitige Beratung; § 80 Abs. 3: Sachverständiger bei KI stets erforderlich."},
   "dora":          {label:"DORA (VO (EU) 2022/2554)", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32022R2554",
                     ref:"Digital Operational Resilience Act – voll anwendbar seit 17.01.2025; behandelt KI-Anbieter als IKT-Drittdienstleister. Sektorspezifisch für Banken, Finanzdienstleister und Versicherungen."},
+  "arbschg-5":     {label:"ArbSchG § 5 – Gefährdungsbeurteilung", type:"recht", url:"https://www.gesetze-im-internet.de/arbschg/__5.html",
+                    ref:"Pflicht zur Beurteilung der Arbeitsbedingungen inkl. psychischer Belastungen (§ 5 Abs. 3 Nr. 6) – relevant, wenn die KI-Einführung Rollen, Belastung oder Kontrolle über die Arbeit verändert."},
+  /* Whitepaper (Organisations-/Führungsperspektive) */
+  "thedive-wp":    {label:"TheDive/Leuphana (2026): KI-Transformation verantwortungsvoll gestalten", type:"studie", url:"https://go.thedive.com/td_download-whitepaper-ki-transformation-gestalten",
+                    ref:"Whitepaper von Berkler, Rütter & Helpap (Leuphana): KI als Organisationsfrage – 7 empirische Thesen zu Führung, Entscheidungs-Governance, beruflicher Identität und gesunder Leistungsfähigkeit."},
   /* adesso-Vorgehensmodell */
   "adesso-tom":    {label:"adesso Target Operating Model", type:"adesso",
                     ref:"adesso-Vorgehensmodell: KI-Treiber (Vision, Use Cases) × KI-Enabler (Organisation, Daten, Enablement, Technologie) ≫ KI-Value; Governance als Fundament. Die Dimensionen wirken als Multiplikatoren – fällt eine auf null, ist das Gesamtergebnis null. Vier Etappen: Management-Befähigung → KI-Reifegrad → Use Case Backlog → KI-TOM."}
@@ -1070,7 +1077,8 @@ const LEGAL_BASELINE = {
   1:[{text:"Die KI-Kompetenzpflicht (Art. 4 EU AI Act) gilt seit 02.02.2025 für jede Organisation, die KI einsetzt – unabhängig von Reifegrad und Risikoklasse.", sources:["ai-act-art4"]},
      {text:"Betriebsrat frühzeitig über geplanten KI-Einsatz unterrichten (§ 90 BetrVG); Mitbestimmung nach § 87 Abs. 1 Nr. 6 vor Einführung klären.", sources:["betrvg"]}],
   2:[{text:"KI-Systeminventar mit Risikoklassifizierung anlegen (Anbieter-/Betreiberrolle, Annex-III-Prüfung je Use Case).", sources:["ai-act-risiko","ai-act-art26"]},
-     {text:"Datenschutz-Check je Pilot: bei Profiling/automatisierten Entscheidungen DSFA-Pflicht prüfen (Art. 35 DSGVO).", sources:["dsgvo-ki"]}],
+     {text:"Datenschutz-Check je Pilot: bei Profiling/automatisierten Entscheidungen DSFA-Pflicht prüfen (Art. 35 DSGVO).", sources:["dsgvo-ki"]},
+     {text:"Psychische Belastungen durch die KI-Einführung (veränderte Rollen, Kontrolle, Leistungsdruck) in die Gefährdungsbeurteilung aufnehmen und Maßnahmen ableiten (§ 5 ArbSchG, insb. Abs. 3 Nr. 6).", sources:["arbschg-5"]}],
   3:[{text:"Governance an ISO/IEC 42001 orientieren (Rollen, Policies, Kontrollen); DSFA bzw. Grundrechte-Folgenabschätzungen dokumentieren.", sources:["iso-42001","dsgvo-ki"]},
      {text:"KI-Betriebsvereinbarung (Rahmen- + Einzelvereinbarungen) mit dem Betriebsrat abschließen; Sachverständigen-Budget einplanen (§ 80 Abs. 3 BetrVG).", sources:["betrvg"]}],
   4:[{text:"Betreiberpflichten operationalisieren: menschliche Aufsicht zuweisen, Logs ≥ 6 Monate aufbewahren, Beschäftigte & Vertretung vor Hochrisiko-Einsatz informieren (Art. 26 Abs. 7).", sources:["ai-act-art26"]}],
@@ -1182,7 +1190,13 @@ const DIMENSIONS = [
        criteria:["Es gibt mindestens eine informell verfolgte Kennzahl zu einem KI-Piloten.",
                  "KPIs sind für mehrere Use Cases definiert (z. B. Zeitersparnis, Fehlerquote).",
                  "Es existiert ein regelmäßiges Reporting (z. B. monatlich/quartalsweise) zu diesen KPIs.",
-                 "Die KPI-Ergebnisse fließen nachweislich in Entscheidungen ein (z. B. Skalierung/Stopp von Use Cases)."]}
+                 "Die KPI-Ergebnisse fließen nachweislich in Entscheidungen ein (z. B. Skalierung/Stopp von Use Cases)."]},
+      {id:"strategie_5", text:"Für KI-gestützte Entscheidungen ist geregelt, was an KI delegiert werden darf, wer prüft und wer die Letztverantwortung trägt.",
+       low:"Keine Regeln, wer bei KI-Ergebnissen entscheidet und verantwortet.", high:"Klare Delegationsgrenzen, menschliche Kontrollpunkte und Verantwortlichkeiten – dokumentiert und gelebt.",
+       criteria:["Es ist definiert, welche Entscheidungen an KI delegiert werden dürfen – und welche ausdrücklich nicht.",
+                 "Für KI-gestützte Entscheidungen bestehen verbindliche menschliche Kontroll-/Freigabepunkte (menschliche Aufsicht, Art. 26 EU AI Act).",
+                 "Die Letztverantwortung für KI-gestützte Entscheidungen ist einer Rolle eindeutig zugeordnet.",
+                 "Es gibt einen Weg, KI-Ergebnisse vor folgenreichen Entscheidungen zu hinterfragen oder anzufechten."]}
     ],
     recommendations:{
       1:[{text:"Einen 90-minütigen Strategie-Workshop mit der Geschäftsleitung ansetzen, um 3–5 Use Cases zu sammeln und grob zu bewerten (Aufwand/Nutzen-Matrix).",
@@ -1389,7 +1403,13 @@ const DIMENSIONS = [
        criteria:["Einzelne Mitarbeitende berichten, sich informell Zeit für Experimente zu nehmen.",
                  "Es gab mindestens ein offizielles Format (Hackathon, Innovation Day) zu KI.",
                  "Feste Zeitkontingente sind für einzelne Teams vorgesehen (z. B. 10 % Zeit).",
-                 "Diese Zeitkontingente sind unternehmensweit verankert und werden nachweislich genutzt."]}
+                 "Diese Zeitkontingente sind unternehmensweit verankert und werden nachweislich genutzt."]},
+      {id:"kultur_5", text:"Auswirkungen von KI auf berufliche Identität, Belastung und psychische Gesundheit werden aktiv adressiert.",
+       low:"Veränderte Rollenbilder und Belastungen durch KI werden nicht thematisiert.", high:"Identitäts- und Belastungsfragen sind Teil der Gefährdungsbeurteilung und werden aktiv begleitet.",
+       criteria:["Veränderungen von Rollen und beruflicher Identität durch KI werden offen thematisiert – nicht nur Effizienzgewinne.",
+                 "Psychische Belastungen durch die KI-Einführung sind Teil der Gefährdungsbeurteilung nach § 5 ArbSchG.",
+                 "Es gibt Ansprechstellen/Angebote für Sorgen, Überforderung oder Sinnfragen im KI-Kontext.",
+                 "Gesunde Leistungsfähigkeit (realistische Erwartungen, Erholung) wird beim KI-Einsatz aktiv berücksichtigt."]}
     ],
     recommendations:{
       1:[{text:"Eine „KI-Ausprobierwoche“ initiieren, in der Teams risikofrei mit einem Tool experimentieren dürfen.",
@@ -2634,6 +2654,7 @@ function renderConsultantView(R){
           <p>${os.desc}</p>
           <div class="overall-score-num">Gesamt-Score: ${fmt1(overallAvg)} / 5 (Mittelwert über alle 6 Dimensionen)</div>
           ${B ? `<div class="overall-delta">${deltaChipHtml(overallAvg, B.scores.overallAvg)} ${stageShiftHtml(overallStage, B.scores.overallStage)} <span class="delta-src">ggü. Bericht vom ${esc(baseDatum)} (damals Ø ${fmt1(B.scores.overallAvg)})</span></div>` : ""}
+          <div class="single-score-hint">ℹ️ Ein einzelner Gesamtwert kann ungleiche Reife verdecken – maßgeblich ist das <b>Profil je Dimension</b> (siehe Radar), nicht die eine Zahl. ${srcChipsHtml(["thedive-wp"])}</div>
         </div>
       </div>
 
@@ -2708,6 +2729,18 @@ function renderConsultantView(R){
           <b>NIST AI RMF, ISO/IEC 42001 und OECD AI Principles</b> als offizielle bzw. zertifizierbare
           Governance-Standards. Die Stufenlogik ist an <b>Gartner (Awareness→Transformational)</b> und CMMI kalibriert.
           Details und vollständige Quellenliste: <code>docs/methodik-fundament.md</code> im Repository.
+        </p>
+      </div>
+      <div class="lib-dim">
+        <h5>Ergänzung aus der Organisations- und Führungsperspektive (2026)</h5>
+        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          Zwei Fragen wurden auf Basis einer Lücken-Analyse gegen ein aktuelles Whitepaper ergänzt, das KI als
+          <b>Organisationsfrage</b> statt als reine Technologiefrage rahmt:
+          <b>Entscheidungs-Governance</b> (in „Strategie &amp; Zielbild“ – was darf an KI delegiert werden, wer prüft,
+          wer verantwortet; verzahnt mit der menschlichen Aufsicht nach Art. 26 EU AI Act) und
+          <b>Identität &amp; gesunde Leistungsfähigkeit</b> (in „Kultur &amp; Mindset“ – Auswirkungen auf Rollenbild und
+          psychische Belastung, verankert an der Gefährdungsbeurteilung nach § 5 ArbSchG).
+          ${srcChipsHtml(["thedive-wp","ai-act-art26","arbschg-5"])}
         </p>
       </div>
     </details>
