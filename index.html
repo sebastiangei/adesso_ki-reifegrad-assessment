@@ -414,6 +414,23 @@
   .plan-kritik summary{cursor:pointer;font-weight:700;color:var(--purple-dark);}
   .plan-kritik p{color:var(--ink-soft);}
 
+  /* ---------- Geführte Tour ---------- */
+  .tour-spot{
+    position:fixed;z-index:200;pointer-events:none;display:none;
+    border:2px solid var(--brand-primary);border-radius:10px;
+    box-shadow:0 0 0 9999px rgba(20,18,16,.55);
+    transition:left .25s ease, top .25s ease, width .25s ease, height .25s ease;
+  }
+  .tour-card{
+    position:fixed;z-index:201;display:none;max-width:340px;
+    background:var(--paper);border:1px solid var(--border);border-radius:10px;
+    box-shadow:var(--shadow);padding:16px 18px;
+  }
+  .tour-card h4{margin:0 0 6px;font-size:14px;}
+  .tour-card p{margin:0 0 12px;font-size:13px;color:var(--ink-soft);line-height:1.5;}
+  .tour-actions{display:flex;gap:8px;align-items:center;}
+  .tour-count{font-size:11px;color:var(--ink-faint);margin-right:auto;}
+
   /* ---------- Persistenz-Leiste ---------- */
   .persist-bar{display:flex;align-items:center;gap:8px;margin:-8px 0 20px;flex-wrap:wrap;}
   .persist-label{font-size:12px;font-weight:700;color:var(--ink-soft);}
@@ -504,6 +521,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:14px;">
       <span id="agentBadge" class="agent-badge-header" style="display:none;">🤖 Agent aktiv</span>
+      <button type="button" class="btn-mini no-print" onclick="startTour()" title="Geführte Tour durch das Tool">🎯 Tour</button>
       <div class="mode-toggle theme-switch no-print" id="themeSwitch">
         <button type="button" data-theme="light" title="Hell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg><span class="tt-lbl">Hell</span></button>
         <button type="button" data-theme="dark" title="Dunkel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg><span class="tt-lbl">Dunkel</span></button>
@@ -740,7 +758,23 @@
     <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch, übersteuerbar per Slider.</p></div>
     <div class="intro-step"><div class="num">3</div><p><b>Auswertung:</b> Report mit Gesamt-Reifegrad, Top-3-Maßnahmen, Quellen und rechtlichem Rahmen. Umschaltbar: Consultant-Ansicht (mit Methodik) ↔ Kunden-Ansicht (präsentationsfertig).</p></div>
     <div class="intro-note">💾 Eingaben werden automatisch im Browser zwischengespeichert; „Speichern (JSON)“ sichert bewusst als Datei.<br>⚠️ Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das Unternehmen anpassen.</div>
-    <div class="intro-actions"><button type="button" class="btn btn-primary" onclick="closeIntro()">Los geht’s</button></div>
+    <div class="intro-actions" style="gap:10px;">
+      <button type="button" class="btn btn-secondary" onclick="closeIntro()">Direkt loslegen</button>
+      <button type="button" class="btn btn-primary" onclick="startTour()">🎯 Geführte Tour starten</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================= GEFÜHRTE TOUR (Spotlight + Erklärkarte) ================= -->
+<div class="tour-spot no-print" id="tourSpot"></div>
+<div class="tour-card no-print" id="tourCard">
+  <h4 id="tourTitle"></h4>
+  <p id="tourText"></p>
+  <div class="tour-actions">
+    <span class="tour-count" id="tourCount"></span>
+    <button type="button" class="btn-mini" id="tourPrevBtn" onclick="tourPrev()">← Zurück</button>
+    <button type="button" class="btn-mini" id="tourNextBtn" onclick="tourNext()">Weiter →</button>
+    <button type="button" class="btn-mini" onclick="endTour()" title="Tour beenden (Esc)">✕</button>
   </div>
 </div>
 
@@ -2567,6 +2601,94 @@ function dismissSkalaBanner(){
   try{ localStorage.setItem(SKALA_KEY, "1"); }catch(e){}
 }
 try{ if(!localStorage.getItem(SKALA_KEY)){ document.getElementById("skalaBanner").style.display = "flex"; } }catch(e){}
+
+/* =========================================================================
+   GEFÜHRTE TOUR: Spotlight-Hervorhebung + Erklärkarte, 11 Stationen
+   über alle drei Schritte. Start: Kurzanleitung (Erstaufruf) oder 🎯-Button.
+   ========================================================================= */
+const TOUR_STEPS = [
+  {panel:"angaben", sel:"#stepper", title:"Drei Schritte zum Report",
+   text:"Das Assessment führt in drei Schritten zum Ergebnis: Angaben → Erhebung → Auswertung. Die Schritte sind jederzeit direkt anklickbar."},
+  {panel:"angaben", sel:".meta-grid", title:"Angaben & Branche",
+   text:"Hier den Kunden erfassen. Wichtig: Die Branche aktiviert später regulatorische Hinweise im Report (z. B. EU AI Act, DORA)."},
+  {panel:"angaben", sel:".agent-card", title:"Agent-Funktionen (optional)",
+   text:"Mit einer LLM-Verbindung analysiert der Agent Notizen, schlägt Interviewfragen vor und erstellt den Maßnahmenplan. Ohne Verbindung läuft alles regelbasiert weiter."},
+  {panel:"angaben", sel:".persist-bar", title:"Nichts geht verloren",
+   text:"Eingaben werden automatisch im Browser zwischengespeichert. Über „Speichern (JSON)“ sichern Sie bewusst als Datei – zum Teilen und Archivieren."},
+  {panel:"erhebung", sel:".dim-card.open .criteria-list", title:"Das Herzstück: belegbare Kriterien",
+   text:"Haken Sie an, was nachweislich erfüllt ist. Daraus entsteht automatisch der Stufenvorschlag: kein Kriterium = Stufe 1 (Basis), alle vier = Stufe 5."},
+  {panel:"erhebung", sel:".dim-card.open .override-row", title:"Ihr Experten-Urteil zählt",
+   text:"Weicht Ihr Eindruck vom Vorschlag ab? Slider verschieben. „↺ Vorschlag übernehmen“ kehrt zum Kriterienwert zurück."},
+  {panel:"erhebung", sel:".dim-card.open .freitext-block", title:"Beobachtungen festhalten",
+   text:"Eindrücke aus Interviews im O-Ton notieren – ohne Klarnamen. Mit Agent-Verbindung werden sie automatisch gegen die Kriterien geprüft."},
+  {panel:"auswertung", sel:".overall-banner", title:"Der Report",
+   text:"Gesamt-Reifegrad auf einen Blick – darunter Radar-Chart, Dimensions-Karten mit Quellen und Übergangs-Hinweisen sowie der rechtliche Rahmen."},
+  {panel:"auswertung", sel:".top3-card", title:"Top-3-Handlungsfelder",
+   text:"Die drei schwächsten Dimensionen mit priorisierten, quellenbelegten Empfehlungen – Ihr Einstieg ins Kundengespräch."},
+  {panel:"auswertung", sel:".plan-box", title:"Maßnahmenplan-Agent",
+   text:"Der Agent komponiert daraus einen 90-Tage-Plan – mit Selbstkritik-Schleife und abhakbaren Maßnahmen. Die Freigabe bleibt bei Ihnen."},
+  {panel:"auswertung", sel:"#modeToggle", title:"Consultant ↔ Kunde",
+   text:"Ein Klick wechselt zur präsentationsfertigen Kunden-Ansicht – ohne Methodik und interne Notizen. Das war die Tour – viel Erfolg!"}
+];
+let tourIx = -1;
+let curTourEl = null;
+function startTour(){
+  closeIntro();
+  if(state.mode !== "consultant"){
+    const b = document.querySelector('#modeToggle button[data-mode="consultant"]');
+    if(b) b.click();
+  }
+  tourIx = -1;
+  tourNext();
+}
+function endTour(){
+  tourIx = -1; curTourEl = null;
+  document.getElementById("tourSpot").style.display = "none";
+  document.getElementById("tourCard").style.display = "none";
+}
+function tourPrev(){ if(tourIx > 0){ tourIx -= 2; tourNext(); } }
+function tourNext(){
+  tourIx++;
+  if(tourIx >= TOUR_STEPS.length){ endTour(); goToStep("angaben"); return; }
+  const s = TOUR_STEPS[tourIx];
+  const panelWechsel = state.step !== s.panel;
+  if(panelWechsel){ goToStep(s.panel); }
+  setTimeout(()=>{
+    const el = document.querySelector(s.sel);
+    if(!el){ tourNext(); return; }
+    el.scrollIntoView({block:"center", behavior:"auto"});
+    setTimeout(()=>positionTour(el, s), 60);
+  }, panelWechsel ? 180 : 30);
+}
+function positionTour(el, s){
+  curTourEl = el;
+  const r = el.getBoundingClientRect();
+  const pad = 6;
+  const spot = document.getElementById("tourSpot");
+  spot.style.display = "block";
+  spot.style.left = (r.left - pad) + "px";
+  spot.style.top = (r.top - pad) + "px";
+  spot.style.width = (r.width + 2*pad) + "px";
+  spot.style.height = (r.height + 2*pad) + "px";
+  const card = document.getElementById("tourCard");
+  document.getElementById("tourTitle").textContent = s.title;
+  document.getElementById("tourText").textContent = s.text;
+  document.getElementById("tourCount").textContent = (tourIx+1) + " / " + TOUR_STEPS.length;
+  document.getElementById("tourPrevBtn").style.visibility = tourIx === 0 ? "hidden" : "visible";
+  document.getElementById("tourNextBtn").textContent = tourIx === TOUR_STEPS.length-1 ? "Fertig ✓" : "Weiter →";
+  card.style.display = "block";
+  const ch = card.offsetHeight, cw = card.offsetWidth;
+  let top = r.bottom + 12;
+  if(top + ch > window.innerHeight - 10){ top = r.top - ch - 12; }
+  if(top < 10){ top = Math.max(10, (window.innerHeight - ch) / 2); }
+  const left = Math.min(Math.max(10, r.left), window.innerWidth - cw - 10);
+  card.style.top = top + "px";
+  card.style.left = left + "px";
+}
+function refreshTour(){ if(tourIx >= 0 && curTourEl){ positionTour(curTourEl, TOUR_STEPS[tourIx]); } }
+window.addEventListener("resize", refreshTour);
+window.addEventListener("scroll", refreshTour, true);
+document.addEventListener("keydown", (e)=>{ if(e.key === "Escape" && tourIx >= 0){ endTour(); } });
 
 /* Kurzanleitung: beim ersten Besuch automatisch, danach über ❓-Button */
 const INTRO_KEY = "ki-reifegrad-intro-seen-v1";
