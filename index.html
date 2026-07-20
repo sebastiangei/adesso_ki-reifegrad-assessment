@@ -206,7 +206,13 @@
   #dimContainer.view-fokus .dim-card.focus-last .freitext-block{display:block;}
   .focus-nav button[disabled]{opacity:.4;cursor:default;}
 
-  .progress-wrap{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  /* „Übernehmen & weiter“ am Ende einer Dimension */
+  .dim-finish{display:flex;justify-content:flex-end;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);}
+  #dimContainer.view-fokus .dim-finish{display:none;}
+  #dimContainer.view-fokus .dim-card.focus-last .dim-finish{display:flex;}
+
+  .progress-wrap{position:sticky;top:0;z-index:30;background:var(--bg);display:flex;align-items:center;gap:14px;padding:12px 0;margin-bottom:12px;}
+  .dim-card{scroll-margin-top:72px;}
   .progress-bar{flex:1;height:9px;background:var(--bg-alt);border-radius:999px;overflow:hidden;}
   .progress-fill{height:100%;background:linear-gradient(90deg,var(--brand-primary),var(--brand-primary-dark));width:0%;transition:width .2s;}
   .progress-text{font-size:13px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
@@ -872,7 +878,7 @@
     </div>
     <div class="nav-actions">
       <button class="btn btn-ghost" onclick="goToStep('angaben')">← Zurück</button>
-      <button class="btn btn-primary" onclick="requestAuswertung()">Auswertung anzeigen →</button>
+      <button class="btn btn-primary" id="btnAuswertung" onclick="requestAuswertung()">Auswertung anzeigen →</button>
     </div>
   </section>
 
@@ -1849,8 +1855,9 @@ document.getElementById("modeToggle").addEventListener("click", (e)=>{
    ========================================================================= */
 function renderErhebung(){
   const container = document.getElementById("dimContainer");
-  container.innerHTML = DIMENSIONS.map(dim=>{
+  container.innerHTML = DIMENSIONS.map((dim,di)=>{
     const avg = dimAverage(dim);
+    const isLast = di === DIMENSIONS.length-1;
     return `
     <div class="card dim-card ${state.dimOpen[dim.id]?'open':''}" id="card-${dim.id}">
       <div class="dim-header" onclick="toggleDim('${dim.id}')">
@@ -1924,6 +1931,9 @@ function renderErhebung(){
               <span style="font-size:12px;color:var(--ink-faint);">${esc(state.agentCopilot[dim.id].rationale||"")}</span>
             </div>` : ""}
             ` : ""}
+          </div>
+          <div class="dim-finish no-print">
+            <button type="button" class="btn btn-primary" onclick="finishDim('${dim.id}')">${isLast ? "Erhebung abschließen ✓" : "Übernehmen &amp; weiter ▸"}</button>
           </div>
         </div>
       </div>
@@ -2130,6 +2140,29 @@ function toggleDim(dimId){
   state.dimOpen[dimId] = !state.dimOpen[dimId];
   document.getElementById("card-"+dimId).classList.toggle("open", state.dimOpen[dimId]);
   if(state.dimOpen[dimId] && state.erhebungView==="fokus"){ applyFocus(dimId); }
+}
+/* Dimension abschließen: aktuellen Block zuklappen, nächsten öffnen und so
+   scrollen, dass der Fortschrittsbalken oben sichtbar bleibt. */
+function finishDim(dimId){
+  state.dimOpen[dimId] = false;
+  const card = document.getElementById("card-"+dimId);
+  if(card) card.classList.remove("open");
+  const idx = DIMENSIONS.findIndex(d=>d.id===dimId);
+  const next = DIMENSIONS[idx+1];
+  if(next){
+    state.dimOpen[next.id] = true;
+    const nextCard = document.getElementById("card-"+next.id);
+    if(nextCard) nextCard.classList.add("open");
+    if(state.erhebungView==="fokus"){ state.focusIdx[next.id] = 0; applyFocus(next.id); }
+    /* Zur nächsten Dimension scrollen; scroll-margin-top lässt Platz für den
+       sticky Fortschrittsbalken, sodass dieser oben sichtbar bleibt. */
+    if(nextCard) nextCard.scrollIntoView({block:"start", behavior:"smooth"});
+  } else {
+    /* Letzte Dimension: zum Auswertung-Button scrollen */
+    const btn = document.getElementById("btnAuswertung");
+    if(btn) btn.scrollIntoView({block:"center", behavior:"smooth"});
+  }
+  scheduleAutosave();
 }
 function updateProgress(){
   const total = DIMENSIONS.reduce((n,d)=>n+d.questions.length,0);
