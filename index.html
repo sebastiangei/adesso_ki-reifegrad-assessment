@@ -438,6 +438,7 @@
 
   .accordion-lib{padding:18px 20px;margin-bottom:20px;}
   .accordion-lib summary{cursor:pointer;font-weight:700;font-size:14px;padding:6px 0;}
+  .acc-subgroup{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--brand-primary);background:var(--accent-blue-bg);border:1px solid var(--accent-blue-border);border-radius:6px;padding:4px 10px;margin:16px 0 2px;}
   .lib-dim{margin:14px 0;}
   .lib-dim h5{margin:0 0 8px;font-size:13.5px;color:var(--brand-primary);}
   .lib-stage-row{display:flex;gap:10px;padding:8px 0;border-top:1px dashed var(--border);}
@@ -2715,7 +2716,8 @@ function renderConsultantView(R){
     ${brancheBoxHtml()}
 
     <details class="card accordion-lib">
-      <summary>Über die Datenbasis &amp; Methodik (Transparenz)</summary>
+      <summary>Methodik &amp; Reifegradmodell (Transparenz)</summary>
+      <div class="acc-subgroup">Datenbasis &amp; Frameworks</div>
       <div class="lib-dim">
         <h5>Wie ist die Datenbasis entstanden?</h5>
         <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
@@ -2754,10 +2756,7 @@ function renderConsultantView(R){
           ${srcChipsHtml(["thedive-wp","ai-act-art26","arbschg-5"])}
         </p>
       </div>
-    </details>
-
-    <details class="card accordion-lib">
-      <summary>Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft</summary>
+      <div class="acc-subgroup">Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft</div>
       <div class="lib-dim">
         <h5>Worauf beruht die Stufeneinteilung?</h5>
         <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
