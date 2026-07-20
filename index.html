@@ -457,6 +457,8 @@
   .src-chip.studie{border-color:var(--accent-blue-border);background:var(--accent-blue-bg);color:var(--brand-primary-dark);}
   .src-chip.analyst{border-color:var(--border);background:var(--bg-alt);color:var(--ink-soft);}
   .src-chip.adesso{border-color:var(--brand-primary);background:var(--accent-blue-bg);color:var(--brand-primary);}
+  a.src-chip{text-decoration:none;cursor:pointer;}
+  a.src-chip:hover{text-decoration:underline;filter:brightness(.96);}
   .tom-tag{font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-top:2px;}
   .engpass-box{
     background:var(--engpass-bg);border:1px solid var(--engpass-border);border-radius:var(--radius);
@@ -802,51 +804,51 @@ const STAGES = [
    ========================================================================= */
 const SOURCES = {
   /* Studien & Meta-Analysen */
-  "toe-meta":      {label:"TOE-Meta-Analyse (Pinto et al. 2025)", type:"studie",
+  "toe-meta":      {label:"TOE-Meta-Analyse (Pinto et al. 2025)", type:"studie", url:"https://doi.org/10.1007/s44163-025-00747-2",
                     ref:"DOI 10.1007/s44163-025-00747-2 – 12 Studien, 3.398 Befragte: organisationale Readiness & Management-Support signifikante Adoptionstreiber; Komplexität nicht signifikant."},
-  "utaut-ttf":     {label:"UTAUT+TTF-Meta-Analyse (Thanthrige et al. 2025)", type:"studie",
+  "utaut-ttf":     {label:"UTAUT+TTF-Meta-Analyse (Thanthrige et al. 2025)", type:"studie", url:"https://www.jmir.org/2025/1/e64524",
                     ref:"JMIR 27:e64524 – 50 Studien: Performance Expectancy stärkster Nutzungstreiber (β=0.304), vor Effort Expectancy, Social Influence, Facilitating Conditions."},
-  "tam-meta":      {label:"TAM-Meta-Analyse (Xue et al. 2026)", type:"studie",
+  "tam-meta":      {label:"TAM-Meta-Analyse (Xue et al. 2026)", type:"studie", url:"https://doi.org/10.1177/21582440251409441",
                     ref:"SAGE Open, 27 Studien, >12.000 TN: Einstellung (r=.72) und wahrgenommener Nutzen (r=.69) dominieren die KI-Adoptionsabsicht."},
-  "ai-mindset":    {label:"AI-Mindset-Growth-Studie (N=1.007)", type:"studie",
+  "ai-mindset":    {label:"AI-Mindset-Growth-Studie (N=1.007)", type:"studie", url:"https://pmc.ncbi.nlm.nih.gov/articles/PMC11780378/",
                     ref:"PMC11780378 – Wachstums-Mindset zweitstärkster Prädiktor positiver KI-Einstellung (β=0.28), nach wahrgenommenem Nutzen (β=0.34)."},
-  "rogers-cluster":{label:"Rogers-Adoptertypen empirisch (2025)", type:"studie",
+  "rogers-cluster":{label:"Rogers-Adoptertypen empirisch (2025)", type:"studie", url:"https://pmc.ncbi.nlm.nih.gov/articles/PMC11780378/",
                     ref:"PMC11780378, Clusteranalyse – Early Adopters ~22 %, Early Majority 33 %, Late Majority 29 %, Laggards 16 %; gezielte Ansprache je Typ."},
-  "errida-lotfi":  {label:"Erfolgsfaktoren-Review (Errida & Lotfi 2021)", type:"studie",
+  "errida-lotfi":  {label:"Erfolgsfaktoren-Review (Errida & Lotfi 2021)", type:"studie", url:"https://doi.org/10.1177/18479790211016273",
                     ref:"DOI 10.1177/18479790211016273 – 37 Change-Modelle, 12 Faktorkategorien (u. a. Vision, Führung, Kommunikation, Beteiligung, Kompetenzen)."},
-  "harrison2021":  {label:"Systematisches Review Change-Modelle (Harrison et al. 2021)", type:"studie",
+  "harrison2021":  {label:"Systematisches Review Change-Modelle (Harrison et al. 2021)", type:"studie", url:"https://doi.org/10.2147/JHL.S289176",
                     ref:"DOI 10.2147/JHL.S289176 – Kotter/Lewin meistgenutzt; wirken als flexible Leitprinzipien, nicht als starre Schrittfolgen."},
-  "kotter-kritik": {label:"Kotter-Analyse: Umsetzungs- & Messlücke", type:"studie",
+  "kotter-kritik": {label:"Kotter-Analyse: Umsetzungs- & Messlücke", type:"studie", url:"https://www.researchgate.net/publication/318481875",
                     ref:"ResearchGate 318481875 – Kotter fehlen Umsetzungswerkzeuge und Wirkungsmessung; genau hier setzen KPIs und dokumentierte Workflows an."},
-  "hughes-70":     {label:"„70 %-Scheiterrate“ widerlegt (Hughes 2011)", type:"studie",
+  "hughes-70":     {label:"„70 %-Scheiterrate“ widerlegt (Hughes 2011)", type:"studie", url:"https://doi.org/10.1080/14697017.2011.630506",
                     ref:"J. Change Management 11(4):451–464 – die populäre 70 %-Zahl ist empirisch nicht belegt; nicht als Dringlichkeitsargument verwenden."},
-  "sadiq2021":     {label:"SLR KI-Reifegradmodelle (Sadiq et al. 2021)", type:"studie",
+  "sadiq2021":     {label:"SLR KI-Reifegradmodelle (Sadiq et al. 2021)", type:"studie", url:"https://doi.org/10.7717/peerj-cs.661",
                     ref:"DOI 10.7717/peerj-cs.661 – 15 Modelle; kritische Faktoren: Data, Analytics, Technology, Governance, People."},
-  "bcg-mit":       {label:"BCG/MIT Sloan Studienreihe", type:"analyst",
+  "bcg-mit":       {label:"BCG/MIT Sloan Studienreihe", type:"analyst", url:"https://sloanreview.mit.edu/projects/winning-with-ai/",
                     ref:"„Winning With AI“ (2019, 2.555 Befragte): signifikante Vorteile entstehen erst, wenn Organisationen MIT KI lernen – nicht durch bloßes Ausrollen."},
   /* Reifegradmodelle */
-  "gartner-aim":   {label:"Gartner AI Maturity Model", type:"analyst",
+  "gartner-aim":   {label:"Gartner AI Maturity Model", type:"analyst", url:"https://www.gartner.com/en/chief-information-officer/research/ai-maturity-model-toolkit",
                     ref:"5 Stufen Awareness→Transformational; Übergang Stufe 2→3 („Pilot-Falle“) gilt als häufigster Fehlerpunkt."},
-  "deloitte-aim":  {label:"Deloitte State of AI in the Enterprise", type:"analyst",
+  "deloitte-aim":  {label:"Deloitte State of AI in the Enterprise", type:"analyst", url:"https://www2.deloitte.com/us/en/pages/consulting/articles/state-of-generative-ai-in-enterprise.html",
                     ref:"2026er-Ausgabe (3.235 Führungskräfte, 24 Länder): Talent-Readiness nur ~20 % – Kompetenzaufbau als zentraler Engpass."},
   /* Standards & Recht */
-  "nist-rmf":      {label:"NIST AI RMF 1.0", type:"standard",
+  "nist-rmf":      {label:"NIST AI RMF 1.0", type:"standard", url:"https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf",
                     ref:"NIST AI 100-1 (2023) – Funktionen GOVERN/MAP/MEASURE/MANAGE; GOVERN verlangt Risikomanagement-Kultur und strategische Verankerung."},
-  "oecd-ai":       {label:"OECD AI Principles", type:"standard",
+  "oecd-ai":       {label:"OECD AI Principles", type:"standard", url:"https://oecd.ai/en/ai-principles",
                     ref:"Erste zwischenstaatliche KI-Norm (2019, aktualisiert 2024) – werteseitige Leitplanken für Zielbild und Kultur."},
-  "iso-42001":     {label:"ISO/IEC 42001:2023", type:"standard",
+  "iso-42001":     {label:"ISO/IEC 42001:2023", type:"standard", url:"https://www.iso.org/standard/81230.html",
                     ref:"Erste zertifizierbare KI-Managementsystem-Norm; 10 Klauseln + 38 Controls (Annex A)."},
-  "ai-act-art4":   {label:"EU AI Act Art. 4 – KI-Kompetenz", type:"recht",
+  "ai-act-art4":   {label:"EU AI Act Art. 4 – KI-Kompetenz", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32024R1689",
                     ref:"VO (EU) 2024/1689 – Pflicht zu ausreichender KI-Kompetenz des Personals; gilt seit 02.02.2025 für ALLE Risikoklassen."},
-  "ai-act-risiko": {label:"EU AI Act – Risikoklassen (Art. 5/6, Annex III)", type:"recht",
+  "ai-act-risiko": {label:"EU AI Act – Risikoklassen (Art. 5/6, Annex III)", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32024R1689",
                     ref:"Verbotene Praktiken; Hochrisiko u. a. Kreditscoring, LV/KV-Tarifierung, Beschäftigung; Transparenz- und Minimalrisiko."},
-  "ai-act-art26":  {label:"EU AI Act Art. 26 – Betreiberpflichten", type:"recht",
+  "ai-act-art26":  {label:"EU AI Act Art. 26 – Betreiberpflichten", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32024R1689",
                     ref:"Bestimmungsgemäße Nutzung, menschliche Aufsicht, Logs ≥ 6 Monate; Abs. 7: Beschäftigte & Arbeitnehmervertretung VOR Einsatz informieren."},
-  "dsgvo-ki":      {label:"DSGVO Art. 22 & 35 (DSFA)", type:"recht",
+  "dsgvo-ki":      {label:"DSGVO Art. 22 & 35 (DSFA)", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32016R0679",
                     ref:"Schutz vor ausschließlich automatisierten Entscheidungen; Datenschutz-Folgenabschätzung verpflichtend bei systematischem Profiling."},
-  "betrvg":        {label:"BetrVG §§ 87, 90, 80, 95", type:"recht",
+  "betrvg":        {label:"BetrVG §§ 87, 90, 80, 95", type:"recht", url:"https://www.gesetze-im-internet.de/betrvg/__87.html",
                     ref:"§ 87 Abs. 1 Nr. 6: erzwingbare Mitbestimmung (BAG: objektive Überwachungseignung genügt – nahezu jeder KI-Einsatz); § 90: frühzeitige Beratung; § 80 Abs. 3: Sachverständiger bei KI stets erforderlich."},
-  "dora":          {label:"DORA (VO (EU) 2022/2554)", type:"recht",
+  "dora":          {label:"DORA (VO (EU) 2022/2554)", type:"recht", url:"https://eur-lex.europa.eu/legal-content/DE/TXT/?uri=CELEX:32022R2554",
                     ref:"Digital Operational Resilience Act – voll anwendbar seit 17.01.2025; behandelt KI-Anbieter als IKT-Drittdienstleister. Sektorspezifisch für Banken, Finanzdienstleister und Versicherungen."},
   /* adesso-Vorgehensmodell */
   "adesso-tom":    {label:"adesso Target Operating Model", type:"adesso",
@@ -899,7 +901,10 @@ function srcChipsHtml(keys){
   if(!keys || !keys.length) return "";
   return `<span class="src-row"><span class="src-label">Quellen:</span>`+keys.map(k=>{
     const s = SOURCES[k];
-    return s ? `<span class="src-chip ${s.type}" title="${esc(s.ref)}">${esc(s.label)}</span>` : "";
+    if(!s) return "";
+    return s.url
+      ? `<a class="src-chip ${s.type}" href="${s.url}" target="_blank" rel="noopener noreferrer" title="${esc(s.ref)} — Klick öffnet die Originalquelle in neuem Tab">${esc(s.label)} ↗</a>`
+      : `<span class="src-chip ${s.type}" title="${esc(s.ref)}">${esc(s.label)}</span>`;
   }).join("")+`</span>`;
 }
 function caveatBoxHtml(){
