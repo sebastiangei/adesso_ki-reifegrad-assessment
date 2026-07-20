@@ -532,7 +532,7 @@
       <button type="button" class="btn-mini no-print" onclick="showIntro()">❓ Anleitung</button>
       <div class="mode-toggle no-print" id="modeToggle">
         <button data-mode="consultant" class="active">Consultant-Ansicht</button>
-        <button data-mode="kunde">Kunden-Ansicht</button>
+        <button data-mode="kunde" title="Wechselt direkt zur präsentationsfertigen Report-Ansicht für den Kunden">Kunden-Ansicht (Report)</button>
       </div>
     </div>
   </header>
@@ -1591,7 +1591,12 @@ document.getElementById("modeToggle").addEventListener("click", (e)=>{
   document.querySelectorAll("#modeToggle button").forEach(b=>b.classList.toggle("active", b===btn));
   document.body.classList.toggle("mode-kunde", state.mode==="kunde");
   document.body.classList.toggle("mode-consultant", state.mode==="consultant");
-  if(state.step==="auswertung"){ renderReport(); }
+  if(state.mode==="kunde" && state.step!=="auswertung"){
+    /* Kunden-Ansicht ist die Report-Sicht – direkt dorthin springen */
+    goToStep("auswertung");
+  } else if(state.step==="auswertung"){
+    renderReport();
+  }
 });
 
 /* =========================================================================
@@ -2011,6 +2016,46 @@ function togglePlanDone(key, checked){
   if(prog) prog.textContent = doneM+" von "+totalM+" Maßnahmen erledigt";
   scheduleAutosave();
 }
+/* Word-Export des Maßnahmenplans (HTML-basiertes .doc – öffnet direkt in Word) */
+function buildPlanWordHtml(plan, done){
+  return `<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>90-Tage-Maßnahmenplan</title>
+<style>
+  body{font-family:Calibri,Arial,sans-serif;color:#262422;}
+  h1{color:#006EC7;font-size:20pt;margin-bottom:4pt;}
+  h2{color:#006EC7;font-size:14pt;margin:18pt 0 6pt;}
+  h3{font-size:11pt;margin:10pt 0 2pt;}
+  p{font-size:10.5pt;margin:2pt 0;}
+  .meta{color:#55524C;font-size:10pt;margin-bottom:12pt;}
+  .fein{color:#8A857D;font-size:9pt;}
+  .done{color:#146B52;}
+  .kasten{margin-top:16pt;padding:8pt;background:#FFF8E6;border:1pt solid #EAD9A0;font-size:9.5pt;color:#6B5A1E;}
+</style></head><body>
+<h1>90-Tage-Maßnahmenplan</h1>
+<p class="meta">${esc(state.meta.kunde)||"Kunde"}${state.meta.bereich?" · "+esc(state.meta.bereich):""}${state.meta.branche?" · "+esc(state.meta.branche):""} · ${esc(state.meta.datum)} · erstellt mit dem adesso KI-Reifegrad-Assessment</p>
+${plan.praemisse ? `<p><i>${esc(plan.praemisse)}</i></p>` : ""}
+${(plan.phasen||[]).map((ph,pi)=>`
+<h2>${esc(ph.zeitraum||"")}${ph.fokus ? " – "+esc(ph.fokus) : ""}</h2>
+${(ph.massnahmen||[]).map((m,mi)=>{
+  const isDone = !!(done && done[pi+"-"+mi]);
+  return `<h3>${isDone?"☑":"☐"} ${esc(m.titel||"")} <span class="fein">[${esc(m.dimension||"")}]</span>${isDone?' <span class="done">– erledigt</span>':""}</h3>
+<p>${esc(m.beschreibung||"")}</p>
+<p class="fein">Verantwortung: ${esc(m.verantwortung||"–")} · Erfolgskriterium: ${esc(m.erfolgskriterium||"–")}</p>`;
+}).join("")}`).join("")}
+${(plan.hinweise && plan.hinweise.length) ? `<h2>Hinweise</h2>${plan.hinweise.map(h=>`<p>• ${esc(h)}</p>`).join("")}` : ""}
+<div class="kasten">KI-generierter Entwurf (agentisch: Analyse → Komposition → Selbstkritik → Revision) – evidenzgestützter Ausgangspunkt. Bitte kritisch prüfen und an den Unternehmenskontext anpassen. Rechtsangaben: Stand Juli 2026, ohne Gewähr.</div>
+</body></html>`;
+}
+function exportPlanWord(){
+  const p = state.agentPlan;
+  if(!p || p.status!=="ok" || !p.plan){ alert("Bitte zuerst einen Maßnahmenplan erstellen."); return; }
+  const html = buildPlanWordHtml(p.plan, p.done||{});
+  const blob = new Blob(["﻿", html], {type:"application/msword"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "massnahmenplan_"+(state.meta.datum || new Date().toISOString().slice(0,10))+".doc";
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+}
 function copyPlanText(){
   const el = document.querySelector(".plan-edit");
   if(!el) return;
@@ -2067,6 +2112,7 @@ function planBoxHtml(R){
       <div class="btn-row no-print" style="margin-top:12px;">
         <button type="button" class="btn-agent" onclick="agentGenerateMassnahmenplan()">Neu generieren</button>
         <button type="button" class="btn-agent" onclick="copyPlanText()">📋 Plan kopieren</button>
+        <button type="button" class="btn-agent" onclick="exportPlanWord()" title="Exportiert den Plan inkl. Erledigt-Status als Word-Dokument">📄 Word-Export</button>
       </div>`;
   }
   return `
