@@ -256,16 +256,14 @@
   }
 
   .anchor-hint{display:flex;justify-content:space-between;gap:14px;font-size:11px;color:var(--ink-faint);font-style:italic;margin:0 0 10px;}
+  .dim-help{font-size:12px;color:var(--ink-soft);background:var(--bg-alt);border-radius:8px;padding:9px 13px;margin:2px 0 16px;line-height:1.5;}
   .criteria-list{display:flex;flex-direction:column;gap:9px;margin-bottom:12px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
-  .crit-hint{font-size:11px;color:var(--ink-faint);font-style:italic;margin:-2px 0 3px;line-height:1.4;}
-  .override-hint{flex-basis:100%;font-size:11px;color:var(--ink-faint);margin-top:-4px;line-height:1.4;}
   .criterion{font-size:13px;color:var(--ink-soft);cursor:pointer;line-height:1.4;}
   .criterion-row{display:flex;align-items:flex-start;gap:9px;}
   .criterion input[type=checkbox]{margin-top:3px;accent-color:var(--brand-primary);width:15px;height:15px;flex-shrink:0;cursor:pointer;}
   .criterion.agent-suggested .criterion-row span{color:var(--brand-purple);font-weight:600;}
   .score-row{font-size:12.5px;color:var(--ink-soft);margin-bottom:10px;}
   .score-row b{color:var(--brand-primary);font-size:14.5px;}
-  .score-hint{color:var(--ink-faint);font-weight:400;}
   .suggest-basis{color:var(--ink-faint);font-style:italic;font-size:12px;}
   .override-row{display:flex;align-items:center;gap:12px;}
   .override-label{font-size:12.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;}
@@ -485,9 +483,6 @@
   .intro-card{background:var(--paper);border-radius:12px;max-width:620px;width:100%;padding:28px 30px;box-shadow:var(--shadow);max-height:90vh;overflow:auto;}
   .intro-card h2{margin:0 0 4px;font-size:20px;}
   .intro-card .intro-sub{margin:0 0 14px;font-size:13.5px;color:var(--ink-soft);}
-  .intro-meta{display:flex;flex-direction:column;gap:8px;margin:0 0 18px;padding:12px 14px;background:var(--bg-alt);border-radius:8px;}
-  .intro-meta div{font-size:12.5px;color:var(--ink-soft);line-height:1.5;}
-  .intro-meta b{color:var(--ink);}
   .intro-step{display:flex;gap:12px;margin:12px 0;align-items:flex-start;}
   .intro-step .num{
     width:26px;height:26px;border-radius:50%;background:var(--brand-primary);color:#fff;flex-shrink:0;
@@ -561,7 +556,6 @@
   .qbreak-box{margin-top:10px;padding:8px 10px;border:1px solid var(--border);border-radius:8px;background:var(--bg);}
   .qbreak-title{font-size:10.5px;font-weight:800;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px;}
   .src-label{font-size:10px;font-weight:700;color:var(--ink-faint);margin-right:2px;}
-  .intro-meta summary{cursor:pointer;font-weight:700;font-size:12.5px;color:var(--brand-primary);user-select:none;}
   .btn-mini{
     border:1px solid var(--border);background:var(--paper);color:var(--ink-soft);
     font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;cursor:pointer;white-space:nowrap;
@@ -843,37 +837,15 @@
   <!-- ================= STEP 2: ERHEBUNG ================= -->
   <section class="panel" id="panel-erhebung">
     <details class="step-help no-print">
-      <summary>❓ Hinweise zu diesem Schritt</summary>
+      <summary>❓ Hinweise &amp; Grundlage zu diesem Schritt</summary>
       <ul>
         <li><b>Kriterien abhaken, was belegbar ist</b> – daraus entsteht automatisch der Stufenvorschlag.</li>
-        <li><b>Zur Skala:</b> Stufe 1 ist der Basiswert (trifft ohne Nachweise auf jede Organisation zu), Stufe 5 = voll ausgeprägt. Darum ergeben 4 Kriterien die Stufe 5: kein Kriterium = 1, jedes erfüllte Kriterium hebt um eine Stufe.</li>
         <li>Weicht Ihr Experteneindruck ab: <b>Slider verschieben</b>. „↺ Vorschlag übernehmen“ kehrt zum Kriterienwert zurück.</li>
         <li><b>Beobachtungen als Freitext</b> je Dimension festhalten – sie fließen in den Report ein (Keyword-Analyse, optional Agent). Keine Klarnamen von Mitarbeitenden.</li>
         <li>Eingaben werden <b>automatisch zwischengespeichert</b> – nichts geht bei einem Reload verloren.</li>
       </ul>
-    </details>
-    <details class="card accordion-lib no-print">
-      <summary>Worauf beruht diese Bewertung? (Dimensionen · Stufen · Scoring)</summary>
-      <div class="lib-dim">
-        <p style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px;">
-          Bewertet wird über <b>6 Dimensionen</b>, eingeordnet in <b>5 Stufen</b>:
-        </p>
-        <ul style="font-size:13px;color:var(--ink-soft);line-height:1.6;margin:6px 0 0;padding-left:18px;">
-          <li><b>Die 6 Dimensionen</b> stehen auf wissenschaftlicher Evidenz – etablierte
-              Adoptions- und Change-Modelle (TAM, UTAUT, TOE, Rogers, Task-Technology-Fit)
-              plus Governance-Standards (NIST AI RMF, OECD). Quellen adversarisch geprüft.</li>
-          <li><b>Die 5 Stufen</b> (Unbewusst → Explorativ → Etabliert → Skaliert → Transformativ)
-              sind am <a href="https://www.gartner.com/en/chief-information-officer/research/ai-maturity-model-toolkit" target="_blank" rel="noopener noreferrer"><b>Gartner AI Maturity Model</b> ↗</a> kalibriert.</li>
-          <li><b>Scoring:</b> Je Frage werden belegbare Kriterien angehakt; kein Kriterium =
-              Stufe 1, jedes erfüllte Kriterium hebt um eine Stufe, alle vier = Stufe 5.
-              Ausgewertet wird getrennt je Dimension, da Organisationen ungleichmäßig reifen.</li>
-        </ul>
-        <p style="font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin:8px 0 0;">
-          Die vollständige Herkunft der Stufen, die Gartner-Zuordnung und die Quellen-Trennung
-          stehen ausführlich im Report unter <i>„Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft"</i>.
-          Alle Empfehlungen sind evidenzgestützte Ausgangspunkte – kritisch prüfen und an das
-          Unternehmen anpassen.
-        </p>
+      <div style="margin-top:8px;padding-top:10px;border-top:1px dashed var(--border);font-size:12.5px;color:var(--ink-soft);line-height:1.6;">
+        <b>Worauf die Bewertung beruht:</b> 6 Dimensionen × 5 Stufen (Unbewusst → Explorativ → Etabliert → Skaliert → Transformativ), kalibriert am <a href="https://www.gartner.com/en/chief-information-officer/research/ai-maturity-model-toolkit" target="_blank" rel="noopener noreferrer">Gartner AI Maturity Model ↗</a>. Die Dimensionen stützen sich auf wissenschaftlich validierte Adoptions-/Change-Modelle (TAM, UTAUT, TOE, Rogers) und Governance-Standards (NIST AI RMF, OECD), adversarisch geprüft. Ausgewertet wird getrennt je Dimension, da Organisationen ungleichmäßig reifen. Vollständige Herkunft im Report unter „Das Reifegradmodell: die 5 Stufen &amp; ihre Herkunft".
       </div>
     </details>
     <div class="skala-banner no-print" id="skalaBanner">
@@ -936,14 +908,7 @@
 <div class="intro-overlay no-print" id="introOverlay">
   <div class="intro-card">
     <h2>So funktioniert das Assessment</h2>
-    <p class="intro-sub">Strukturiert die KI-Reife eines Unternehmens erheben – und daraus fundierte nächste Schritte ableiten.</p>
-    <details class="intro-meta">
-      <summary>Wozu dieses Tool · für wen · was es besonders macht</summary>
-      <div><b>Wozu?</b> Standortbestimmung der KI-Reife über 6 Dimensionen und 5 Stufen – als belastbare Grundlage für Change-Vorhaben rund um KI-Einführung.</div>
-      <div><b>Für wen?</b> Change Manager:innen und Consultants, die KI-Einführungen begleiten – im Kundenworkshop, im Interview oder in der Nachbereitung.</div>
-      <div><b>Was es besonders macht:</b> Bewertet wird über belegbare Kriterien statt Bauchgefühl – und jede Handlungsempfehlung ist wissenschaftlich zitiert (Meta-Analysen, NIST, Gartner), rechtlich verankert (EU AI Act, BetrVG) und an die Branche angepasst. Vollständig lokal im Browser, keine Datenübertragung.</div>
-      <div><b>Im adesso-Vorgehen:</b> Etappe 2 („Verstehen“) der vier Etappen der KI-Strategie – Management-Befähigung → <b>KI-Reifegrad</b> → Use Case Backlog → KI Target Operating Model.</div>
-    </details>
+    <p class="intro-sub">Strukturiert die KI-Reife eines Unternehmens erheben – und daraus fundierte nächste Schritte ableiten. Wozu, für wen und auf welcher Grundlage, steht auf der Startseite unter „Worüber informiert dieses Tool".</p>
     <div class="intro-step"><div class="num">1</div><p><b>Angaben:</b> Kunde, Branche und Kontext erfassen. Die Branche steuert regulatorische Hinweise im Report.</p></div>
     <div class="intro-step"><div class="num">2</div><p><b>Erhebung:</b> Je Frage abhaken, welche Kriterien belegbar erfüllt sind – der Stufenvorschlag entsteht automatisch, übersteuerbar per Slider.</p></div>
     <div class="intro-step"><div class="num">3</div><p><b>Auswertung:</b> Report mit Gesamt-Reifegrad, Top-3-Maßnahmen, Quellen und rechtlichem Rahmen. Umschaltbar: Consultant-Ansicht (mit Methodik) ↔ Kunden-Ansicht (präsentationsfertig).</p></div>
@@ -1893,6 +1858,7 @@ function renderErhebung(){
             <span class="focus-counter">Frage 1 von ${dim.questions.length}</span>
             <button type="button" class="btn-mini focus-next" onclick="focusNav('${dim.id}',1)">Weiter ▶</button>
           </div>
+          <div class="dim-help">So bewerten: Kriterien sind <b>unabhängig</b> ankreuzbar (Reihenfolge egal) – jedes belegbar erfüllte hebt die Stufe um eins (kein Kriterium = Stufe 1, alle vier = Stufe 5). Ihr <b>Slider-Urteil hat Vorrang</b> vor dem automatischen Vorschlag.</div>
           ${dim.questions.map((q,qi)=>{
             const suggested = suggestedScore(q.id);
             const current = state.answers[q.id];
@@ -1902,7 +1868,6 @@ function renderErhebung(){
               <div class="question-text">${q.text}</div>
               <div class="anchor-hint"><span>1 = ${q.low}</span><span>5 = ${q.high}</span></div>
               <div class="criteria-list">
-                <div class="crit-hint">Unabhängig ankreuzbar – Reihenfolge egal. Gezählt wird die Anzahl: jedes belegbar erfüllte Kriterium hebt die Stufe um eins.</div>
                 ${q.criteria.map((c,ci)=>{
                   const ev = (state.agentEvidence[q.id]||{})[ci];
                   return `
@@ -1917,7 +1882,6 @@ function renderErhebung(){
               </div>
               <div class="score-row">
                 Automatischer Vorschlag aus den Kriterien: <b id="suggest-${q.id}">${suggested}</b>/5<span class="suggest-basis" id="basis-${q.id}">${suggested===1?" – Basis, noch keine Kriterien belegt":""}</span>
-                <span class="score-hint">(Skala 1–5: kein Kriterium erfüllt = Stufe 1 (Basis) · alle 4 erfüllt = Stufe 5)</span>
               </div>
               <div class="override-row">
                 <span class="override-label">Ihre Bewertung:</span>
@@ -1925,7 +1889,6 @@ function renderErhebung(){
                   class="q-slider" data-qid="${q.id}" data-dim="${dim.id}">
                 <span class="val-pill" id="val-${q.id}">${current}</span>
                 <button type="button" class="btn-sync" id="sync-${q.id}" style="display:${isOverridden?'inline-block':'none'}">↺ Vorschlag übernehmen</button>
-                <div class="override-hint">Ihr Experten-Urteil hat Vorrang – der Vorschlag oben ist nur der Ausgangspunkt, den Sie jederzeit anpassen können.</div>
               </div>
             </div>`;
           }).join("")}
